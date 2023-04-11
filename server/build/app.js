@@ -1,5 +1,2 @@
-import fastify from 'fastify';
-import myRoute from './routes/main.route.js';
-export const server = fastify({ logger: false });
-server.register(myRoute);
+export {};
 //# sourceMappingURL=app.js.map

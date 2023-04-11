@@ -1,7 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import { Router } from 'express';
+import { main } from '../controllers/main.controller.js';
 
-export default async function myRoute(fastify: FastifyInstance) {
-  fastify.get('/me', async (request, reply) => {
-    return { message: 'Hello, world!' };
-  });
-}
+export const router = Router();
+
+router.get('/', main);
