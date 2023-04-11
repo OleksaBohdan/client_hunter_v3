@@ -9,7 +9,7 @@ const inputCitySelector: any =
 const searchButtonSelector: any = 'button#searchButton.btn.btn-primary[type="submit"]';
 const numberOfVacanciesSelector: any = 'button#searchButton.btn.btn-primary[type="submit"]';
 const moreResultsBtnSelector: any = 'button.btn.btn-default.btn-sm.btn-block#moreresultbutton[onclick="showmore();"]';
-const resultsBlockSelector: any = '#ajaxupdateform:result_block';
+const jobListElementSelector: any = '#ajaxupdateform\\:result_block article a';
 
 let VACANCY_LINKS: string[];
 
@@ -80,47 +80,47 @@ export async function runCaJobankParser(city: string) {
   }
 
   // open list with vacancy links
-  try {
-    let i = 0;
-    const int = setInterval(async () => {
-      i++;
-      console.log('wait for btn', i);
+  async function showAllVanacyLinks() {
+    for (let i = 0; i >= 0; i++) {
+      console.log(`Iteration ${i}`);
       try {
         await page.waitForSelector(moreResultsBtnSelector, { timeout: 7000 });
         const moreResultsButton = await page.$(moreResultsBtnSelector);
         if (moreResultsButton) {
-          console.log(moreResultsButton);
           moreResultsButton.click();
         }
       } catch (err) {
         console.log(err);
-        clearInterval(int);
-        console.log('FINISH ');
+        break;
       }
-    }, 1000);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  await showAllVanacyLinks();
+
+  // fetch vacancy links
+  try {
+    const jobListingElements = await page.$$(jobListElementSelector);
+    const hrefs = await Promise.all(jobListingElements.map((el) => el.evaluate((a) => a.getAttribute('href'))));
+    if (hrefs != null) {
+      const filteredHrefs = hrefs.filter((href) => href && !href.includes('/login'));
+      const prefixedHrefs = filteredHrefs.map((href) => `https://www.jobbank.gc.ca${href}`);
+      VACANCY_LINKS = prefixedHrefs;
+    }
   } catch (err) {
     console.log(err);
   }
 
-  // collect vacancy links
-  try {
-    // await page.waitForSelector(resultsBlockSelector, { timeout: 5000 });
-    console.log('getting hrefs');
-    const jobListingElements = await page.$$('#ajaxupdateform\\:result_block article a');
-    const hrefs = await Promise.all(jobListingElements.map((el) => el.evaluate((a) => a.getAttribute('href'))));
-    console.log(hrefs);
-    console.log('finish getting hrefs');
-  } catch (err) {
-    console.log(err);
-  }
+  await page.close();
+
+  console.log('VACANCY_LINKS', VACANCY_LINKS);
 }
+
 // try {
 
 // } catch(err) {
 //   console.log(err);
 // }
-
-// element.textContent.trim()
 
 // go to main page +
 // close modal if exists
@@ -130,3 +130,4 @@ export async function runCaJobankParser(city: string) {
 // get results number
 // collect vacancy links
 // close browser
+// go for each link and parse data
