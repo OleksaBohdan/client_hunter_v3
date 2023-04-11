@@ -1,5 +1,5 @@
 import { app } from './app.js';
-import { PORT } from './configs/config.js';
+import { PORT } from './configs/app.config.js';
 
 async function startServer() {
   try {
