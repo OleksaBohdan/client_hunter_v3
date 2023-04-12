@@ -1,32 +1,18 @@
-import Fastify from 'fastify';
-const server = Fastify({});
-const opts = {
-    schema: {
-        response: {
-            200: {
-                type: 'object',
-                properties: {
-                    pong: {
-                        type: 'string',
-                    },
-                },
-            },
-        },
-    },
-};
-server.get('/ping', opts, async (request, reply) => {
-    return { pong: 'it worked!' };
-});
-const start = async () => {
+import { app } from './app.js';
+import { PORT } from './configs/app.config.js';
+async function startServer() {
     try {
-        await server.listen({ port: 3000 });
-        const address = server.server.address();
-        const port = typeof address === 'string' ? address : address === null || address === void 0 ? void 0 : address.port;
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Client hunter v3 – app listening at port:${PORT}`);
+        });
     }
-    catch (err) {
-        server.log.error(err);
+    catch (error) {
+        console.error(error);
         process.exit(1);
     }
-};
-start();
+}
+startServer().catch((error) => {
+    console.error(error);
+    process.exit(1);
+});
 //# sourceMappingURL=index.js.map
