@@ -13,6 +13,7 @@ export enum Status {
 }
 
 export interface ICompany extends Document {
+  note: string;
   positionKeyword: string;
   placeKeyword: string;
   mailFrom: string;
@@ -36,20 +37,21 @@ export interface ICompany extends Document {
 
 const CompanySchema: Schema<ICompany> = new Schema<ICompany>(
   {
+    note: { type: String, default: '' },
     positionKeyword: { type: String, default: '' },
     placeKeyword: { type: String, default: '' },
-    mailFrom: { type: String, default: '' },
-    email: { type: String, default: '' },
-    phone: { type: String, default: '' },
-    name: { type: String, default: '' },
-    website: { type: String, default: '' },
-    vacancyLink: { type: String, default: '' },
-    additionalInfo: { type: String, default: '' },
-    industry: { type: String, default: '' },
-    vacancyTitle: { type: String, default: '' },
-    address: { type: String, default: '' },
-    size: { type: Number, default: NaN },
-    turnover: { type: Number, default: NaN },
+    mailFrom: { type: String },
+    email: { type: String },
+    phone: { type: String },
+    name: { type: String },
+    website: { type: String },
+    vacancyLink: { type: String },
+    additionalInfo: { type: String },
+    industry: { type: String },
+    vacancyTitle: { type: String },
+    address: { type: String },
+    size: { type: Number },
+    turnover: { type: Number },
     vacancyDate: { type: Date },
     status: { type: String, enum: Object.values(Status), required: true, default: Status.WHITE },
     vacancyParsedDate: { type: Date, required: true, default: Date.now() },

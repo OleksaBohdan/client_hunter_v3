@@ -1,5 +1,11 @@
 import puppeteer from 'puppeteer';
-import { isEmail } from '../../../pkg/validators.js';
+import { isEmail, validateCanadaPhone } from '../../../pkg/validators.js';
+import { removeExistingVacancyLinks } from '../../../pkg/filterVacancyLinks.js';
+
+import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
+import { IUser, User } from '../../../databases/mongo/models/User.js';
+import { createCompany } from '../../repositories/company.service.js';
+import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
 
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
@@ -21,7 +27,7 @@ const companyNameSelector: any = 'p.date-business span.business span[property="n
 const postCreatedSelector: any = 'p.date-business span.date';
 const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 
-export async function runCaJobankParser(city: string, position: string) {
+export async function runCaJobankParser(city: string, position: string, user: IUser) {
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
 
@@ -34,7 +40,16 @@ export async function runCaJobankParser(city: string, position: string) {
   });
 
   const page = await browser.newPage();
-  await page.goto(homePage);
+  try {
+    await page.goto(homePage);
+  } catch (err) {
+    try {
+      await page.goto(homePage);
+    } catch (err) {
+      console.log('FINISH');
+      await browser.close();
+    }
+  }
 
   // close modal
   try {
@@ -44,7 +59,7 @@ export async function runCaJobankParser(city: string, position: string) {
       await closeModalButton.click();
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   // enter value - vacancy position
@@ -55,7 +70,7 @@ export async function runCaJobankParser(city: string, position: string) {
       await inputPositionElement.type(position);
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   // enter value - city
@@ -66,7 +81,7 @@ export async function runCaJobankParser(city: string, position: string) {
       await inputCityElement.type(city);
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   // click to search
@@ -77,7 +92,7 @@ export async function runCaJobankParser(city: string, position: string) {
       await searchButton.click();
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   // get results number
@@ -90,7 +105,7 @@ export async function runCaJobankParser(city: string, position: string) {
       return;
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   // open list with vacancy links
@@ -103,7 +118,7 @@ export async function runCaJobankParser(city: string, position: string) {
           moreResultsButton.click();
         }
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         break;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -121,10 +136,17 @@ export async function runCaJobankParser(city: string, position: string) {
       VACANCY_LINKS = prefixedHrefs;
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   await page.close();
+
+  // Filter links from DB and recently founded
+  const existingLinks = await readCompaniesVacancyLink(user);
+  VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
+
+  console.log('existingLinks', existingLinks);
+  console.log('VACANCY_LINKS', VACANCY_LINKS);
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -135,7 +157,7 @@ export async function runCaJobankParser(city: string, position: string) {
   for (let i = 0; i < VACANCY_LINKS.length; i += PARALLEL_PAGE) {
     const promises = [];
     for (let j = 0; j < PARALLEL_PAGE && i + j < VACANCY_LINKS.length; j++) {
-      promises.push(parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j]));
+      promises.push(parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position));
     }
     await Promise.all(promises);
   }
@@ -144,7 +166,19 @@ export async function runCaJobankParser(city: string, position: string) {
   await browser.close();
 }
 
-async function parseVacancyPage(link: string, page: puppeteer.Page) {
+async function parseVacancyPage(
+  link: string,
+  page: puppeteer.Page,
+  user: IUser,
+  positionKeyword: string,
+  placeKeyword: string,
+) {
+  const newCompany: ICompany = new Company();
+
+  newCompany.vacancyLink = link;
+  newCompany.positionKeyword = positionKeyword;
+  newCompany.placeKeyword = placeKeyword;
+
   try {
     await page.goto(link);
 
@@ -156,7 +190,7 @@ async function parseVacancyPage(link: string, page: puppeteer.Page) {
         await buttonElement.click();
       }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     // get email
@@ -164,31 +198,60 @@ async function parseVacancyPage(link: string, page: puppeteer.Page) {
       await page.waitForSelector(emailSelector, { timeout: 3000 });
       const email = await page.$eval(emailSelector, (element) => element.textContent);
       const validEmail = isEmail(email);
+      newCompany.email = validEmail;
+      if (validEmail != '') {
+        newCompany.mailFrom = 'jobsite';
+      }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     // get phone
     try {
       const phone = await page.$eval(phoneSelector, (element) => element.textContent?.trim().split('\n')[0]);
+      if (validateCanadaPhone(phone) != '') {
+        newCompany.phone = validateCanadaPhone(phone);
+      }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     // get reference number
     try {
-      const referenceNumber = await page.$eval(additionalInfoSelector, (el) =>
+      const additionalInfo = await page.$eval(additionalInfoSelector, (el) =>
         el.previousSibling ? el.previousSibling.textContent?.trim() : null,
       );
+      newCompany.additionalInfo = additionalInfo;
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     // get company name
     try {
       const companyName = await page.$eval(companyNameSelector, (element) => element.textContent);
+      newCompany.name = companyName;
     } catch (err) {
-      console.log(err);
+      // console.log(err);
+    }
+
+    // get company website
+    try {
+      const website = await page.$eval(
+        'span[property="hiringOrganization"] span[property="name"] a.external',
+        (anchor) => anchor.href,
+      );
+
+      newCompany.website = website;
+      const companyName = await page.$eval(
+        'span[property="hiringOrganization"] span[property="name"] a.external',
+        (anchor) => anchor.textContent,
+      );
+
+      if (companyName) {
+        newCompany.name = companyName;
+      }
+    } catch (err) {
+      // console.log(err);
     }
 
     // get postCreated
@@ -196,20 +259,28 @@ async function parseVacancyPage(link: string, page: puppeteer.Page) {
       const datePosted = await page.$eval(postCreatedSelector, (element) => element.textContent);
       if (datePosted) {
         const date = new Date(datePosted);
-        const formattedDate = date.toISOString().split('T')[0];
+        // const formattedDate = date.toISOString().split('T')[0];
+        newCompany.vacancyDate = date;
       }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     // get Vacancy Job title
     try {
       const jobTitle = await page.$eval(vacancyTitleSelector, (element) => element.textContent);
       const title = jobTitle?.trim();
+      newCompany.vacancyTitle = title;
     } catch (err) {
-      console.log(err);
+      // console.log(err);
+    }
+
+    try {
+      await createCompany(newCompany, user);
+    } catch (err) {
+      // console.log(err);
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 }

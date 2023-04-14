@@ -2,10 +2,9 @@ import { Company, ICompany } from '../../databases/mongo/models/Company.js';
 import { User, IUser } from '../../databases/mongo/models/User.js';
 import { Email, IEmail } from '../../databases/mongo/models/Email.js';
 
-export async function createCompany(c: ICompany, u: IUser, e: IEmail[]): Promise<ICompany> {
+export async function createCompany(c: ICompany, u: IUser): Promise<ICompany> {
   const company = new Company(c);
   company.user = u;
-  company.sentEmails = e;
   return await company.save();
 }
 
@@ -20,4 +19,10 @@ export async function deleteCompany(c: ICompany): Promise<ICompany | null> {
   } catch (err) {
     throw err;
   }
+}
+
+export async function readCompaniesVacancyLink(u: IUser): Promise<string[]> {
+  const companies: ICompany[] = await Company.find({ u });
+  const vacancyLinks: string[] = companies.map((company) => company.vacancyLink);
+  return vacancyLinks;
 }
