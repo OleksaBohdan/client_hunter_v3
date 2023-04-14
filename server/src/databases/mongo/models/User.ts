@@ -8,11 +8,14 @@ export interface IUser extends Document {
   companies: ICompany['_id'][];
 }
 
-const UserSchema: Schema = new Schema<IUser>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  passwordHash: { type: String, required: true, unique: true },
-  companies: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
-});
+const UserSchema: Schema = new Schema<IUser>(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    passwordHash: { type: String, required: true, unique: true },
+    companies: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
+  },
+  { timestamps: true },
+);
 
 export const User = mongoose.model<IUser>('User', UserSchema);

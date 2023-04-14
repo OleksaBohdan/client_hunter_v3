@@ -84,12 +84,6 @@ export async function runCaJobankParser(city: string, position: string) {
   try {
     await page.waitForSelector(numberOfVacanciesSelector);
     const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
-    console.log('numberOfVacancies - ', numberOfVacancies);
-    console.log('numberOfVacancies - ', numberOfVacancies);
-    console.log('numberOfVacancies - ', numberOfVacancies);
-    console.log('numberOfVacancies - ', numberOfVacancies);
-    console.log('numberOfVacancies - ', numberOfVacancies);
-    console.log('numberOfVacancies - ', numberOfVacancies);
     if (numberOfVacancies === '0') {
       console.log('FINISH - VACANCIES NOT FOUND');
       await browser.close();
