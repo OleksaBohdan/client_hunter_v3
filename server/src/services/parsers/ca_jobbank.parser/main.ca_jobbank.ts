@@ -1,10 +1,10 @@
 import puppeteer from 'puppeteer';
 import { isEmail, validateCanadaPhone } from '../../../pkg/validators.js';
-import { removeExistingVacancyLinks } from '../../../pkg/filterVacancyLinks.js';
+import { removeExistingVacancyLinks } from '../../../pkg/filters.js';
 
 import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
-import { IUser, User } from '../../../databases/mongo/models/User.js';
-import { createCompany } from '../../repositories/company.service.js';
+import { IUser } from '../../../databases/mongo/models/User.js';
+import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
 import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
 
 // Home page
@@ -26,6 +26,7 @@ const additionalInfoSelector: any = '#tp_referenceNumber';
 const companyNameSelector: any = 'p.date-business span.business span[property="name"] strong';
 const postCreatedSelector: any = 'p.date-business span.date';
 const vacancyTitleSelector: any = 'h1.title span[property="title"]';
+const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
 export async function runCaJobankParser(city: string, position: string, user: IUser) {
   const PARALLEL_PAGE = 3;
@@ -145,8 +146,10 @@ export async function runCaJobankParser(city: string, position: string, user: IU
   const existingLinks = await readCompaniesVacancyLink(user);
   VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
 
-  console.log('existingLinks', existingLinks);
-  console.log('VACANCY_LINKS', VACANCY_LINKS);
+  const existingEmails = await readCompaniesEmails(user);
+
+  console.log('existingLinks', existingLinks.length);
+  console.log('new VACANCY_LINKS', VACANCY_LINKS.length);
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -157,7 +160,7 @@ export async function runCaJobankParser(city: string, position: string, user: IU
   for (let i = 0; i < VACANCY_LINKS.length; i += PARALLEL_PAGE) {
     const promises = [];
     for (let j = 0; j < PARALLEL_PAGE && i + j < VACANCY_LINKS.length; j++) {
-      promises.push(parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position));
+      promises.push(parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position, existingEmails));
     }
     await Promise.all(promises);
   }
@@ -172,6 +175,7 @@ async function parseVacancyPage(
   user: IUser,
   positionKeyword: string,
   placeKeyword: string,
+  emails: string[],
 ) {
   const newCompany: ICompany = new Company();
 
@@ -198,8 +202,12 @@ async function parseVacancyPage(
       await page.waitForSelector(emailSelector, { timeout: 3000 });
       const email = await page.$eval(emailSelector, (element) => element.textContent);
       const validEmail = isEmail(email);
-      newCompany.email = validEmail;
       if (validEmail != '') {
+        if (emails.includes(validEmail)) {
+          return;
+        }
+
+        newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
       }
     } catch (err) {
@@ -236,16 +244,10 @@ async function parseVacancyPage(
 
     // get company website
     try {
-      const website = await page.$eval(
-        'span[property="hiringOrganization"] span[property="name"] a.external',
-        (anchor) => anchor.href,
-      );
+      const website = await page.$eval(vacancyWebsiteSelector, (anchor) => anchor.href);
 
       newCompany.website = website;
-      const companyName = await page.$eval(
-        'span[property="hiringOrganization"] span[property="name"] a.external',
-        (anchor) => anchor.textContent,
-      );
+      const companyName = await page.$eval(vacancyWebsiteSelector, (anchor) => anchor.textContent);
 
       if (companyName) {
         newCompany.name = companyName;
@@ -278,7 +280,7 @@ async function parseVacancyPage(
     try {
       await createCompany(newCompany, user);
     } catch (err) {
-      // console.log(err);
+      console.log(err);
     }
   } catch (err) {
     // console.log(err);

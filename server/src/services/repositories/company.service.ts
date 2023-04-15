@@ -22,7 +22,16 @@ export async function deleteCompany(c: ICompany): Promise<ICompany | null> {
 }
 
 export async function readCompaniesVacancyLink(u: IUser): Promise<string[]> {
-  const companies: ICompany[] = await Company.find({ u });
+  const companies: ICompany[] = await Company.find({ user: u });
   const vacancyLinks: string[] = companies.map((company) => company.vacancyLink);
   return vacancyLinks;
+}
+
+export async function readCompaniesEmails(u: IUser): Promise<string[]> {
+  const companies: ICompany[] = await Company.find({ user: u });
+  const emails: string[] = companies.map((company) => company.email);
+  const filteredEmails: string[] = emails.filter((email) => email !== '' && email !== undefined);
+  console.log(filteredEmails);
+
+  return filteredEmails;
 }

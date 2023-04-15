@@ -4,6 +4,8 @@ import { createUser } from '../services/repositories/user.service.js';
 import { IUser, User } from '../databases/mongo/models/User.js';
 import { ICompany, Company } from '../databases/mongo/models/Company.js';
 
+import { readCompaniesVacancyLink, readCompaniesEmails } from '../services/repositories/company.service.js';
+
 export async function main(req: Request, res: Response, next: NextFunction) {
   try {
     // const newUser: IUser = new User({
@@ -14,11 +16,13 @@ export async function main(req: Request, res: Response, next: NextFunction) {
 
     // const user = await createUser(newUser);
 
-    const user = await User.findById('6439a5f4e7cfc8a156771526');
+    const user = await User.findById('6439abd829be3fa7902c9359');
 
     if (user) {
       await runCaJobankParser('calgary', 'cleaner', user);
-      res.status(200).json(user);
+      // const existingCompanies = await readCompaniesVacancyLink(user);
+      const emails = await readCompaniesEmails(user);
+      res.status(200).json(emails);
     }
   } catch (err) {
     next(err);
