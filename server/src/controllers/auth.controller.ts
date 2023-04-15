@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser } from '../services/auth/auth.service.js';
+import HttpError from 'http-errors';
+import { User } from '../databases/mongo/models/User.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../configs/app.config.js';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -26,7 +30,28 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 export async function getMe(req: Request, res: Response, next: NextFunction) {
   try {
     res.status(200).json({ message: 'me' });
+
+    try {
+      const user = await User.findById(req.userId);
+
+      if (!user) {
+        throw HttpError(404, 'User does not exist');
+      }
+
+      const token = jwt.sign(
+        {
+          id: user._id,
+          email: user?.email,
+        },
+        JWT_SECRET,
+        { expiresIn: '30d' },
+      );
+
+      res.json({ user, token });
+    } catch (err) {
+      throw err;
+    }
   } catch (err) {
-    next(err);
+    throw err;
   }
 }
