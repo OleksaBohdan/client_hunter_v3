@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
-import { isEmail, validateCanadaPhone } from '../../../pkg/validators.js';
-import { removeExistingVacancyLinks } from '../../../pkg/filters.js';
+import { isEmail, validateCanadaPhone } from '../pkg/validators.js';
+import { removeExistingVacancyLinks } from '../pkg/filters.js';
 
 import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
