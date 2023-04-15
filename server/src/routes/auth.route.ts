@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { login, register, getMe } from '../controllers/auth.controller.js';
+import { checkAuth } from '../middlewares/getMe.middleware.js';
 
 export const authRoute = Router();
 
 authRoute.post('/register', register);
 authRoute.post('/login', login);
-authRoute.get('/me', getMe);
+authRoute.get('/me', checkAuth, getMe);
