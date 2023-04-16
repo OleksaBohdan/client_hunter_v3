@@ -109,9 +109,12 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "lib": ["esnext", "dom"],
   "ts-node": {
-    "esm": true
+    "esm": true,
+    "transpileOnly": false,
+    "files": true
   }
 }

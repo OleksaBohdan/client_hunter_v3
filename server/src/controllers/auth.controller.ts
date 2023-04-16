@@ -29,29 +29,23 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
 export async function getMe(req: Request, res: Response, next: NextFunction) {
   try {
-    res.status(200).json({ message: 'me' });
+    const user = await User.findById(req.userId);
 
-    try {
-      const user = await User.findById(req.userId);
-
-      if (!user) {
-        throw HttpError(404, 'User does not exist');
-      }
-
-      const token = jwt.sign(
-        {
-          id: user._id,
-          email: user?.email,
-        },
-        JWT_SECRET,
-        { expiresIn: '30d' },
-      );
-
-      res.json({ user, token });
-    } catch (err) {
-      throw err;
+    if (!user) {
+      throw HttpError(404, 'User does not exist');
     }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user?.email,
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' },
+    );
+
+    res.json({ user, token });
   } catch (err) {
-    throw err;
+    next(err);
   }
 }

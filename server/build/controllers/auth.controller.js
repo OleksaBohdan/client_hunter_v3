@@ -25,24 +25,19 @@ export async function login(req, res, next) {
 }
 export async function getMe(req, res, next) {
     try {
-        res.status(200).json({ message: 'me' });
-        try {
-            const user = await User.findById(req.userId);
-            if (!user) {
-                throw HttpError(404, 'User does not exist');
-            }
-            const token = jwt.sign({
-                id: user._id,
-                email: user === null || user === void 0 ? void 0 : user.email,
-            }, JWT_SECRET, { expiresIn: '30d' });
-            res.json({ user, token });
+        const user = await User.findById(req.userId);
+        if (!user) {
+            console.log('User does not exist');
+            throw HttpError(404, 'User does not exist');
         }
-        catch (err) {
-            throw err;
-        }
+        const token = jwt.sign({
+            id: user._id,
+            email: user === null || user === void 0 ? void 0 : user.email,
+        }, JWT_SECRET, { expiresIn: '30d' });
+        res.json({ user, token });
     }
     catch (err) {
-        throw err;
+        next(err);
     }
 }
 //# sourceMappingURL=auth.controller.js.map
