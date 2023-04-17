@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpError from 'http-errors';
-import { IUser } from '../databases/mongo/models/User.js';
 import {
   readUser as getUser,
   updateUser as changeUser,
