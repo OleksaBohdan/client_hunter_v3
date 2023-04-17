@@ -18,14 +18,13 @@ const LoginPage = () => {
       <Box
         sx={{
           padding: '2rem',
-          height: '100vh',
+          paddingTop: '4rem',
+          // height: '100%',
           textAlign: 'center',
+          maxWidth: '700px',
+          m: '2rem auto',
         }}
       >
-        <Typography fontWeight="500" variant="h5" sx={{ mb: '1.5rem' }}>
-          Create your account
-        </Typography>
-
         <Form />
       </Box>
     </Box>

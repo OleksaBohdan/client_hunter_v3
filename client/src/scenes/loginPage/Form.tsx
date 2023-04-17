@@ -1,21 +1,19 @@
 import { useState } from 'react';
 import { Box, Button, TextField, useMediaQuery, Typography, useTheme } from '@mui/material';
 
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setLogin } from '../../state';
-import FlexBetween from '../../components/FlexBetween';
 
 const registerSchema = yup.object().shape({
-  email: yup.string().email('invalid email').required('required'),
-  password: yup.string().required('required'),
+  email: yup.string().email('email is not valid').required('required'),
+  password: yup.string().required('required').min(8),
 });
 
 const loginSchema = yup.object().shape({
-  email: yup.string().email('invalid email').required('required'),
+  email: yup.string().email('email is not valid').required('required'),
   password: yup.string().required('required'),
 });
 
@@ -34,14 +32,55 @@ const Form = () => {
   const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const isNonMobile = useMediaQuery('(min-width:600px)');
+  const isNonMobile = useMediaQuery('(min-width:760px)');
   const isLogin = pageType === 'login';
   const isRegister = pageType === 'register';
 
+  const register = async (values: any, onSubmitProps: any) => {
+    const savedUserResponse = await fetch('http://localhost:3001/api/v1/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(values),
+    });
+    const savedUser = await savedUserResponse.json();
+    onSubmitProps.resetForm();
+
+    if (savedUser) {
+      setPageType('login');
+    }
+  };
+
+  const login = async (values: any, onSubmitProps: any) => {
+    const loggedInResponse = await fetch('http://localhost:3001/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    });
+    const loggedIn = await loggedInResponse.json();
+    onSubmitProps.resetForm();
+    if (loggedIn) {
+      dispatch(
+        setLogin({
+          user: loggedIn.user,
+          token: loggedIn.token,
+        })
+      );
+      navigate('/home');
+    }
+  };
+
   const handleFormSubmit = async (values: any, onSubmitProps: any) => {
     console.log(values, onSubmitProps);
-    // if (isLogin) await login(values, onSubmitProps);
-    // if (isRegister) await register(values, onSubmitProps);
+    if (isLogin) await login(values, onSubmitProps);
+    if (isRegister) await register(values, onSubmitProps);
+  };
+
+  const statusStyle = (status: any) => {
+    switch (status) {
+      case 'login':
+        return palette.primary.main;
+      case 'register':
+        return palette.primary.light;
+    }
   };
 
   return (
@@ -52,11 +91,15 @@ const Form = () => {
     >
       {({ values, errors, touched, handleBlur, handleChange, handleSubmit, setFieldValue, resetForm }) => (
         <form onSubmit={handleSubmit}>
+          <Typography fontWeight="500" variant="h5" sx={{ mb: '1.5rem' }}>
+            {isLogin ? 'Welcome back' : 'Create your account'}
+          </Typography>
           <Box
             sx={{
               display: 'grid',
-              gap: '30px',
+              gap: '20px',
               gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              // gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
             }}
           >
             {isRegister && (
@@ -112,8 +155,6 @@ const Form = () => {
             )}
           </Box>
 
-          {/* BUTTONS */}
-
           <Box>
             <Button
               fullWidth
@@ -121,13 +162,13 @@ const Form = () => {
               sx={{
                 m: '2rem 0',
                 p: '1rem',
-                backgroundColor: palette.primary.main,
-
+                backgroundColor: statusStyle(pageType),
                 color: palette.background.paper,
-                '&:hover': { backgroundColor: palette.primary.main },
+                '&:hover': { backgroundColor: statusStyle(pageType) },
+                fontWeight: '900',
               }}
             >
-              {isLogin ? 'LOGIN' : 'REGISTER'}
+              {isLogin ? 'SIGN IN' : 'REGISTER'}
             </Button>
             <Typography
               onClick={() => {
