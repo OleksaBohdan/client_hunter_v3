@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useState } from 'react';
 import {
   Box,
@@ -25,11 +26,7 @@ const Navbar = () => {
   const mainBlue = theme.palette.primary.main;
   const mainPaper = theme.palette.background.paper;
 
-  return (
-    <FlexBetween sx={{ backgroundColor: mainPaper }}>
-      <p>pedfknvdfj</p>
-    </FlexBetween>
-  );
+  return <FlexBetween sx={{ height: '100vh', width: 260 }}></FlexBetween>;
 };
 
 export default Navbar;
