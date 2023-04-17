@@ -12,7 +12,7 @@ export const themeSettings = () => {
         contrastText: '#fff',
       },
       background: {
-        main: '#fff',
+        paper: '#fff',
         default: '#f0f2f5',
       },
     },
