@@ -1,3 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /page-to-be-excluded.html
+Disallow: /directory-to-be-excluded/
