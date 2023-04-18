@@ -49,7 +49,7 @@ export async function loginUser(email: string, password: string) {
 
     return { authUser, token, message: 'Authorization successful' };
   } catch (err) {
-    throw HttpError(403, 'Not access');
+    throw err;
   }
 }
 

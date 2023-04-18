@@ -5,9 +5,11 @@ import FiltersPage from './scenes/filtersPage';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import { themeSettings } from './theme';
+import { useSelector } from 'react-redux';
 
 function App() {
   const theme = createTheme(themeSettings());
+  const isAuth = Boolean(useSelector((state: any) => state.token));
 
   return (
     <div className="app">
@@ -15,9 +17,9 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/filters" element={<FiltersPage />} />
+            <Route path="/" element={isAuth ? <Navigate to="/home" /> : <LoginPage />} />
+            <Route path="/home" element={isAuth ? <HomePage /> : <Navigate to="/" />} />
+            <Route path="/filters" element={isAuth ? <FiltersPage /> : <Navigate to="/" />} />
           </Routes>
         </ThemeProvider>
       </BrowserRouter>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Box, Button, TextField, useMediaQuery, Typography, useTheme } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, Button, TextField, useMediaQuery, Typography, useTheme, Alert } from '@mui/material';
 
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -29,6 +29,8 @@ const initialValuesLogin = {
 
 const Form = () => {
   const [pageType, setPageType] = useState('register');
+  const [alert, setAlert] = useState(null);
+
   const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,9 +41,18 @@ const Form = () => {
   const register = async (values: any, onSubmitProps: any) => {
     const savedUserResponse = await fetch('http://localhost:3001/api/v1/auth/register', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
     });
+
+    if (savedUserResponse.status !== 201) {
+      const { message } = await savedUserResponse.json();
+      setAlert(message);
+      return;
+    }
+
     const savedUser = await savedUserResponse.json();
+    setAlert(null);
     onSubmitProps.resetForm();
 
     if (savedUser) {
@@ -55,12 +66,23 @@ const Form = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
     });
+
+    if (loggedInResponse.status !== 200) {
+      const { message } = await loggedInResponse.json();
+      setAlert(message);
+      return;
+    }
+
     const loggedIn = await loggedInResponse.json();
+    setAlert(null);
     onSubmitProps.resetForm();
+
+    console.log('loggedIn', loggedIn);
+
     if (loggedIn) {
       dispatch(
         setLogin({
-          user: loggedIn.user,
+          user: loggedIn.authUser,
           token: loggedIn.token,
         })
       );
@@ -69,7 +91,6 @@ const Form = () => {
   };
 
   const handleFormSubmit = async (values: any, onSubmitProps: any) => {
-    console.log(values, onSubmitProps);
     if (isLogin) await login(values, onSubmitProps);
     if (isRegister) await register(values, onSubmitProps);
   };
@@ -94,6 +115,15 @@ const Form = () => {
           <Typography fontWeight="500" variant="h5" sx={{ mb: '1.5rem' }}>
             {isLogin ? 'Welcome back' : 'Create your account'}
           </Typography>
+
+          {alert && (
+            <>
+              <Alert severity="error" sx={{ mb: '1.5rem' }}>
+                {alert}
+              </Alert>
+            </>
+          )}
+
           <Box
             sx={{
               display: 'grid',
@@ -174,6 +204,7 @@ const Form = () => {
               onClick={() => {
                 setPageType(isLogin ? 'register' : 'login');
                 resetForm();
+                setAlert(null);
               }}
               sx={{
                 '&:hover': {
