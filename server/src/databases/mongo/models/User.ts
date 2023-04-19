@@ -23,7 +23,7 @@ const UserSchema: Schema = new Schema<IUser>(
     keywords: [{ type: Schema.Types.ObjectId, ref: 'Keyword' }],
     cities: [{ type: Schema.Types.ObjectId, ref: 'City' }],
     blackIndustry: [{ type: Schema.Types.ObjectId, ref: 'BlackIndustry' }],
-    parser: [{ type: Schema.Types.ObjectId, ref: 'Parser' }],
+    parser: { type: Schema.Types.ObjectId, ref: 'Parser' },
   },
   { timestamps: true },
 );
