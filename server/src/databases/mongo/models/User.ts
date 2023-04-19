@@ -3,6 +3,7 @@ import { ICompany } from './Company.js';
 import { IKeyword } from './Keyword.js';
 import { ICity } from './City.js';
 import { IBlackIndustry } from './BlackIndustry.js';
+import { IParser } from './Parser.js';
 
 export interface IUser extends Document {
   email: string;
@@ -11,6 +12,7 @@ export interface IUser extends Document {
   keywords: IKeyword['_id'][];
   cities: ICity['_id'][];
   blackIndustry: IBlackIndustry['_id'][];
+  parser: IParser['_id'];
 }
 
 const UserSchema: Schema = new Schema<IUser>(
@@ -21,6 +23,7 @@ const UserSchema: Schema = new Schema<IUser>(
     keywords: [{ type: Schema.Types.ObjectId, ref: 'Keyword' }],
     cities: [{ type: Schema.Types.ObjectId, ref: 'City' }],
     blackIndustry: [{ type: Schema.Types.ObjectId, ref: 'BlackIndustry' }],
+    parser: [{ type: Schema.Types.ObjectId, ref: 'Parser' }],
   },
   { timestamps: true },
 );
