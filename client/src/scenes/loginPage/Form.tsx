@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Box, Button, TextField, useMediaQuery, Typography, useTheme, Alert } from '@mui/material';
 
 import { Formik } from 'formik';
@@ -76,8 +76,6 @@ const Form = () => {
     const loggedIn = await loggedInResponse.json();
     setAlert(null);
     onSubmitProps.resetForm();
-
-    console.log('loggedIn', loggedIn);
 
     if (loggedIn) {
       dispatch(

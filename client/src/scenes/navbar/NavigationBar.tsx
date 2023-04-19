@@ -1,26 +1,28 @@
-import * as React from 'react';
 import { useState } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import MenuIcon from '@mui/icons-material/Menu';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import {
+  AppBar,
+  Box,
+  CssBaseline,
+  Divider,
+  Drawer,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { Settings, Logout, FilterList, Search } from '@mui/icons-material';
-import { useTheme } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
+import MenuIcon from '@mui/icons-material/Menu';
 import { setLogout } from '../../state';
 
 import Parser from '../parser';
 import Filters from '../filters';
-import { SimpleDialog } from './settings';
+import { SettingsDialog } from './settings';
 
 import logo from '../../assets/logo_full.png';
 
@@ -28,9 +30,9 @@ const drawerWidth = 260;
 
 const ResponsiveNavbar = () => {
   const dispatch = useDispatch();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedButton, setSelectedButton] = useState(0);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const theme = useTheme();
 
@@ -54,7 +56,9 @@ const ResponsiveNavbar = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100vh' }}>
       <Box>
         <Toolbar>
-          <img src={`${logo}`} alt="logo" style={{ display: 'block', maxWidth: '90%', maxHeight: '90%' }} />
+          <Link to="/home" style={{ display: 'block', maxWidth: '90%', maxHeight: '90%' }}>
+            <img src={logo} alt="logo" style={{ display: 'block', width: '100%', height: '100%' }} />
+          </Link>
         </Toolbar>
         <Divider />
         <List>
@@ -126,7 +130,7 @@ const ResponsiveNavbar = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
@@ -161,7 +165,7 @@ const ResponsiveNavbar = () => {
           {selectedButton === 1 ? <Filters /> : null}
         </Box>
 
-        <SimpleDialog open={open} onClose={handleClose} />
+        <SettingsDialog open={open} onClose={handleClose} />
       </Box>
     </Box>
   );
