@@ -1,11 +1,13 @@
-import { Box} from '@mui/material';
+import { Box } from '@mui/material';
 
-import { ChooseWebsite } from './ChooseWebsite';
+import { ChooseWebsite } from './ChooseParser';
 
 const Parser = () => {
-  return <Box sx={{ width: '100%' }}>
-    <ChooseWebsite/>
-  </Box>;
+  return (
+    <Box sx={{ width: '100%' }}>
+      <ChooseWebsite />
+    </Box>
+  );
 };
 
 export default Parser;
