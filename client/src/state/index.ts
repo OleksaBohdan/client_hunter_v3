@@ -6,7 +6,7 @@ import { Keyword } from '../types/Keyword';
 export interface IMainState {
   user: User | null;
   token: string | null;
-  keywords: Keyword[] | null;
+  keywords: Keyword[];
   cities: any | null;
   blackIndustries: any | null;
   emails: any | null;
@@ -17,7 +17,7 @@ export interface IMainState {
 const initialState: IMainState = {
   user: null,
   token: null,
-  keywords: null,
+  keywords: [],
   cities: null,
   blackIndustries: null,
   emails: null,
