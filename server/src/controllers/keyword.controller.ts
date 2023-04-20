@@ -3,7 +3,9 @@ import HttpError from 'http-errors';
 import {
   createKeyword as writeKeyword,
   readKeywords as getKeywords,
+  readKeyword as getKeyword,
   deleteKeyword,
+  chooseKeyword as chooseActiveKeyword,
 } from '../services/repositories/keyword.service.js';
 
 export async function createKeyword(req: Request, res: Response, next: NextFunction) {
@@ -59,6 +61,33 @@ export async function deleteKeywordById(req: Request, res: Response, next: NextF
     await deleteKeyword(keywordId);
 
     res.status(204).json({ message: 'Keyword deleted succesfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function chooseKeyword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.userId;
+    const { keywordId } = req.body;
+
+    if (!id) {
+      throw HttpError(401, 'Unauthorized');
+    }
+
+    if (!keywordId) {
+      throw HttpError(400, 'Client error. Choosen keyword does not exist. Try again later...');
+    }
+
+    const keyword = await getKeyword(keywordId);
+
+    if (!keyword) {
+      throw HttpError(500, 'Server error. Choosen keyword does not exist. Try again later... ');
+    }
+
+    await chooseActiveKeyword(id, keywordId);
+
+    res.status(204).json({ message: 'Keyword choosen succesfully' });
   } catch (err) {
     next(err);
   }

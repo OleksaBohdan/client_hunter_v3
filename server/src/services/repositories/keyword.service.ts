@@ -12,6 +12,14 @@ export async function readKeywords(id: string) {
   return await Keyword.find({ user: id });
 }
 
+export async function readKeyword(id: string) {
+  return await Keyword.findById(id);
+}
+
 export async function deleteKeyword(id: string) {
   return await Keyword.findByIdAndDelete(id);
+}
+
+export async function chooseKeyword(userId: string, keywordId: string) {
+  await User.findByIdAndUpdate(userId, { activeKeyword: keywordId });
 }
