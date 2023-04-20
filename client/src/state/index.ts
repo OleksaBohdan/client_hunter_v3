@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../types/User';
 import { Parsers } from '../types/Parsers';
+import { Keyword } from '../types/Keyword';
 
 export interface IMainState {
   user: User | null;
   token: string | null;
-  keywords: any | null;
+  keywords: Keyword[] | null;
   cities: any | null;
   blackIndustries: any | null;
   emails: any | null;
@@ -44,8 +45,16 @@ export const authSlice = createSlice({
         state.user.parser = action.payload.parser;
       }
     },
+    setKeywords: (state, action: PayloadAction<{ keywords: Keyword[] }>) => {
+      state.keywords = action.payload.keywords;
+    },
+    setChoosenKeyword: (state, action) => {
+      if (state.user) {
+        state.user.keyword = action.payload.keyword;
+      }
+    },
   },
 });
 
-export const { setLogin, setLogout, setParsers, setChoosenParser } = authSlice.actions;
+export const { setLogin, setLogout, setParsers, setChoosenParser, setKeywords, setChoosenKeyword } = authSlice.actions;
 export default authSlice.reducer;

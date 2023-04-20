@@ -1,8 +1,17 @@
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { IMainState } from '../../state';
+
 import { Box, Typography, TextField, Button, Alert, CircularProgress, useTheme, ButtonGroup } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export const ChooseKeyword = () => {
+  const dispatch = useDispatch();
+  const token = useSelector((state: IMainState) => state.token);
+  const user = useSelector((state: IMainState) => state.user);
   const { palette } = useTheme();
+  const [errorAlert, setErrorAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>

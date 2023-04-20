@@ -7,5 +7,3 @@ export const parserRoute = Router();
 
 parserRoute.get('/parsers', checkAuth, readParsers);
 parserRoute.put('/parser', checkAuth, chooseParser);
-
-// checkAuth,
