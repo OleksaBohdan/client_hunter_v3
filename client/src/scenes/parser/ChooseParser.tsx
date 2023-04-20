@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IMainState, setChoosenParser, setParsers } from '../../state';
-import { Box, Typography, Button, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Alert, LinearProgress } from '@mui/material';
 import { Parsers } from '../../types/Parsers';
 
 export const ChooseWebsite = () => {
@@ -20,11 +20,11 @@ export const ChooseWebsite = () => {
     setIsLoading(true);
 
     try {
-      const parserResponse = await fetch('http://localhost:3001/api/v1/parsers', {
+      const response = await fetch('http://localhost:3001/api/v1/parsers', {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
-      const { parsers } = await parserResponse.json();
+      const { parsers } = await response.json();
 
       dispatch(setParsers({ parsers }));
       setErrorAlert(false);
@@ -45,13 +45,13 @@ export const ChooseWebsite = () => {
     dispatch(setChoosenParser({ parser: id }));
 
     try {
-      const parserResponse = await fetch('http://localhost:3001/api/v1/parser', {
+      const response = await fetch('http://localhost:3001/api/v1/parser', {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ parserId: id }),
       });
 
-      if (parserResponse.status === 204) {
+      if (response.status === 204) {
         setErrorAlert(false);
       } else {
         setErrorAlert(true);
@@ -80,20 +80,14 @@ export const ChooseWebsite = () => {
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2 }}>
+      <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
       <Typography variant="h5">Choose Website to parse</Typography>
-
-      {isLoading && <CircularProgress sx={{ marginTop: 1 }} />}
-
-      {!isLoading && (
-        <>
-          {errorAlert && (
-            <Alert severity="error" sx={{ marginTop: 1 }}>
-              Failed to choose parser. Please try again.
-            </Alert>
-          )}
-          <Box>{parsersBtns}</Box>
-        </>
+      {errorAlert && (
+        <Alert severity="error" sx={{ marginTop: 1 }}>
+          Something went wrong. Please try again later.
+        </Alert>
       )}
+      <Box>{parsersBtns}</Box>
     </Box>
   );
 };

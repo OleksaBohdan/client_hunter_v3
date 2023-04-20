@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IMainState, setKeywords, setChoosenKeyword } from '../../state';
-
-import { Box, Typography, TextField, Button, Alert, CircularProgress, useTheme, ButtonGroup } from '@mui/material';
+import { Box, Typography, TextField, Button, Alert, useTheme, ButtonGroup, LinearProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Keyword } from '../../types/Keyword';
 
@@ -23,14 +22,13 @@ export const ChooseKeyword = () => {
     setIsLoading(true);
 
     try {
-      const parserResponse = await fetch('http://localhost:3001/api/v1/keywords', {
+      const response = await fetch('http://localhost:3001/api/v1/keywords', {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
-      const { keywords } = await parserResponse.json();
 
+      const { keywords } = await response.json();
       dispatch(setKeywords({ keywords }));
-      setErrorAlert(false);
     } catch (error) {
       setErrorAlert(true);
     } finally {
@@ -42,19 +40,20 @@ export const ChooseKeyword = () => {
     if (!user || id === user.keyword) {
       return;
     }
+    setIsLoading(true);
 
     const prevKeyword = user.keyword;
 
     dispatch(setChoosenKeyword({ keyword: id }));
 
     try {
-      const parserResponse = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch('http://localhost:3001/api/v1/keyword', {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ keywordId: id }),
       });
 
-      if (parserResponse.status === 204) {
+      if (response.status === 204) {
         setErrorAlert(false);
       } else {
         setErrorAlert(true);
@@ -63,20 +62,48 @@ export const ChooseKeyword = () => {
     } catch (error) {
       setErrorAlert(true);
       dispatch(setChoosenKeyword({ keyword: prevKeyword }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleAddKeyword = async (keyword: string) => {
+    if (keyword === '') {
+      return;
+    }
+    setIsLoading(true);
     try {
-      const parserResponse = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch('http://localhost:3001/api/v1/keyword', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword: keyword }),
       });
 
-      const { newKeyword } = await parserResponse.json();
-      console.log(newKeyword);
-      console.log(keywords);
+      if (response.status === 201) {
+        const { newKeyword } = await response.json();
+        dispatch(setKeywords({ keywords: [...keywords, newKeyword] }));
+      }
+    } catch (error) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteKeyword = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/keyword/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+
+      if (response.status === 204) {
+        const updatedKeywords = keywords.filter((keyword) => keyword._id !== id);
+        dispatch(setKeywords({ keywords: updatedKeywords }));
+      } else {
+        setErrorAlert(true);
+      }
     } catch (error) {
       setErrorAlert(true);
     } finally {
@@ -86,7 +113,6 @@ export const ChooseKeyword = () => {
 
   const keywordBtns = keywords?.map((value: Keyword) => {
     const isSelected = user && user.keyword === value._id;
-
     return (
       <ButtonGroup
         key={value._id}
@@ -97,7 +123,9 @@ export const ChooseKeyword = () => {
         <Button onClick={() => handleChooseKeyword(value._id)}>{value.keyword}</Button>
         <Button
           aria-label="delete"
-          // onClick={onDelete}
+          onClick={() => {
+            handleDeleteKeyword(value._id);
+          }}
           sx={{
             backgroundColor: 'white',
             '&:hover': { backgroundColor: '#d32f2f' },
@@ -111,7 +139,15 @@ export const ChooseKeyword = () => {
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
+      <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
       <Typography variant="h5">Choose Keyword to parse</Typography>
+
+      {errorAlert && (
+        <Alert severity="error" sx={{ marginTop: 1 }}>
+          Something went wrong. Please try again later.
+        </Alert>
+      )}
+
       <Box
         component="form"
         onSubmit={(event) => {
