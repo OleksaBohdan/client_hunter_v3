@@ -27,7 +27,6 @@ export async function getMe(req, res, next) {
     try {
         const user = await User.findById(req.userId);
         if (!user) {
-            console.log('User does not exist');
             throw HttpError(404, 'User does not exist');
         }
         const token = jwt.sign({

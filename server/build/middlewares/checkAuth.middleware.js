@@ -15,7 +15,7 @@ export async function checkAuth(req, res, next) {
         next();
     }
     catch (err) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(403).json({ message: 'Not access' });
     }
 }
-//# sourceMappingURL=getMe.middleware.js.map
+//# sourceMappingURL=checkAuth.middleware.js.map

@@ -39,7 +39,7 @@ export async function loginUser(email, password) {
         return { authUser, token, message: 'Authorization successful' };
     }
     catch (err) {
-        throw HttpError(403, 'Not access');
+        throw err;
     }
 }
 export async function getMe() {
