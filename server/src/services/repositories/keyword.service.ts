@@ -16,8 +16,14 @@ export async function readKeyword(id: string) {
   return await Keyword.findById(id);
 }
 
-export async function deleteKeyword(id: string) {
-  return await Keyword.findByIdAndDelete(id);
+export async function deleteKeyword(userId: string, id: string) {
+  await Keyword.findByIdAndDelete(id);
+  const user = await User.findById(userId);
+
+  if (user?.activeKeyword == id) {
+    user.activeKeyword = null;
+    await user.save();
+  }
 }
 
 export async function chooseKeyword(userId: string, keywordId: string) {

@@ -58,7 +58,7 @@ export async function deleteKeywordById(req: Request, res: Response, next: NextF
       throw HttpError(400, 'Client error. Keyword not set. Try again later...');
     }
 
-    await deleteKeyword(keywordId);
+    await deleteKeyword(id, keywordId);
 
     res.status(204).json({ message: 'Keyword deleted succesfully' });
   } catch (err) {
