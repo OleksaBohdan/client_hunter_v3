@@ -10,7 +10,7 @@ export interface IUser extends Document {
   passwordHash: string;
   companies: ICompany['_id'][];
   activeKeyword: IKeyword['_id'];
-  cities: ICity['_id'][];
+  activeCity: ICity['_id'];
   blackIndustry: IBlackIndustry['_id'][];
   parser: IParser['_id'];
 }
@@ -21,7 +21,7 @@ const UserSchema: Schema = new Schema<IUser>(
     passwordHash: { type: String, required: true, unique: true },
     companies: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
     activeKeyword: { type: Schema.Types.ObjectId, ref: 'Keyword' },
-    cities: [{ type: Schema.Types.ObjectId, ref: 'City' }],
+    activeCity: { type: Schema.Types.ObjectId, ref: 'City' },
     blackIndustry: [{ type: Schema.Types.ObjectId, ref: 'BlackIndustry' }],
     parser: { type: Schema.Types.ObjectId, ref: 'Parser' },
   },
