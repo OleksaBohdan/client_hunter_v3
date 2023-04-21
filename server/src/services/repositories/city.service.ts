@@ -21,7 +21,7 @@ export async function deleteCity(userId: string, id: string) {
   const user = await User.findById(userId);
 
   if (user?.activeCity == id) {
-    user.activeCity = null;
+    user.activeCity = undefined;
     await user.save();
   }
 }

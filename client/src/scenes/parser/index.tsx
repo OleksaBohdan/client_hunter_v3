@@ -22,7 +22,7 @@ export default Parser;
 
 // Choose keywords +
 
-// Choose city
+// Choose city +
 
 // Run parser + parsing status
 

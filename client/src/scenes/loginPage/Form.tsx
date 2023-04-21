@@ -127,7 +127,6 @@ const Form = () => {
               display: 'grid',
               gap: '20px',
               gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              // gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
             }}
           >
             {isRegister && (

@@ -6,6 +6,8 @@ import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
 import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
 import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
+import { City } from '../../../databases/mongo/models/City.js';
+import { Keyword } from '../../../databases/mongo/models/Keyword.js';
 
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
@@ -28,7 +30,7 @@ const postCreatedSelector: any = 'p.date-business span.date';
 const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
-export async function runCaJobankParser(city: string, position: string, user: IUser) {
+export async function runCaJobankParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
 

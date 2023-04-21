@@ -21,7 +21,7 @@ export async function deleteKeyword(userId: string, id: string) {
   const user = await User.findById(userId);
 
   if (user?.activeKeyword == id) {
-    user.activeKeyword = null;
+    user.activeKeyword = undefined;
     await user.save();
   }
 }
