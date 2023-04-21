@@ -3,4 +3,5 @@ export type User = {
   email: string;
   parser: string;
   keyword: string;
+  city: string;
 };

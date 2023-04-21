@@ -1,34 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IMainState, setKeywords, setChoosenKeyword } from '../../state';
+import { IMainState, setCities, setChoosenCity } from '../../state';
 import { Box, Typography, TextField, Button, Alert, useTheme, ButtonGroup, LinearProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Keyword } from '../../types/Keyword';
+import { City } from '../../types/City';
 
 export const ChooseCity = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
   const user = useSelector((state: IMainState) => state.user);
-  const keywords = useSelector((state: IMainState) => state.keywords);
+  const cities = useSelector((state: IMainState) => state.cities);
   const { palette } = useTheme();
   const [errorAlert, setErrorAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    uploadKeywords();
+    uploadCities();
   }, []);
 
-  const uploadKeywords = async () => {
+  const uploadCities = async () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keywords', {
+      const response = await fetch('http://localhost:3001/api/v1/cities', {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const { keywords } = await response.json();
-      dispatch(setKeywords({ keywords }));
+      const { cities } = await response.json();
+      dispatch(setCities({ cities }));
     } catch (error) {
       setErrorAlert(true);
     } finally {
@@ -36,57 +36,57 @@ export const ChooseCity = () => {
     }
   };
 
-  const handleChooseKeyword = async (id: string) => {
-    if (!user || id === user.keyword) {
+  const handleChooseCity = async (id: string) => {
+    if (!user || id === user.city) {
       return;
     }
     setIsLoading(true);
 
-    const prevKeyword = user.keyword;
+    const prevCity = user.city;
 
-    dispatch(setChoosenKeyword({ keyword: id }));
+    dispatch(setChoosenCity({ city: id }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch('http://localhost:3001/api/v1/city', {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keywordId: id }),
+        body: JSON.stringify({ cityId: id }),
       });
 
       if (response.status === 204) {
         setErrorAlert(false);
       } else {
         setErrorAlert(true);
-        dispatch(setChoosenKeyword({ keyword: prevKeyword }));
+        dispatch(setChoosenCity({ city: prevCity }));
       }
     } catch (error) {
       setErrorAlert(true);
-      dispatch(setChoosenKeyword({ keyword: prevKeyword }));
+      dispatch(setChoosenCity({ city: prevCity }));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddKeyword = async (keyword: string) => {
-    if (keyword === '') {
+  const handleAddCity = async (city: string) => {
+    if (city === '') {
       return;
     }
 
-    if (keyword.length > 50) {
+    if (city.length > 50) {
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch('http://localhost:3001/api/v1/city', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: keyword }),
+        body: JSON.stringify({ city: city }),
       });
 
       if (response.status === 201) {
-        const { newKeyword } = await response.json();
-        dispatch(setKeywords({ keywords: [...keywords, newKeyword] }));
+        const { newCity } = await response.json();
+        dispatch(setCities({ cities: [...cities, newCity] }));
       }
     } catch (error) {
       setErrorAlert(true);
@@ -95,17 +95,17 @@ export const ChooseCity = () => {
     }
   };
 
-  const handleDeleteKeyword = async (id: string) => {
+  const handleDeleteCity = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/keyword/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/v1/city/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
 
       if (response.status === 204) {
-        const updatedKeywords = keywords.filter((keyword) => keyword._id !== id);
-        dispatch(setKeywords({ keywords: updatedKeywords }));
+        const updatedCities = cities.filter((city) => city._id !== id);
+        dispatch(setCities({ cities: updatedCities }));
       } else {
         setErrorAlert(true);
       }
@@ -116,8 +116,8 @@ export const ChooseCity = () => {
     }
   };
 
-  const keywordBtns = keywords?.map((value: Keyword) => {
-    const isSelected = user && user.keyword === value._id;
+  const citiesBtns = cities?.map((value: City) => {
+    const isSelected = user && user.city === value._id;
     return (
       <ButtonGroup
         key={value._id}
@@ -125,11 +125,11 @@ export const ChooseCity = () => {
         aria-label="split button"
         sx={{ marginRight: 2, marginTop: 2 }}
       >
-        <Button onClick={() => handleChooseKeyword(value._id)}>{value.keyword}</Button>
+        <Button onClick={() => handleChooseCity(value._id)}>{value.city}</Button>
         <Button
           aria-label="delete"
           onClick={() => {
-            handleDeleteKeyword(value._id);
+            handleDeleteCity(value._id);
           }}
           sx={{
             backgroundColor: 'white',
@@ -157,8 +157,8 @@ export const ChooseCity = () => {
         component="form"
         onSubmit={(event) => {
           event.preventDefault();
-          const keywordInput = (event.target as HTMLFormElement).elements.namedItem('keywordInput') as HTMLInputElement;
-          handleAddKeyword(keywordInput.value);
+          const cityInput = (event.target as HTMLFormElement).elements.namedItem('cityInput') as HTMLInputElement;
+          handleAddCity(cityInput.value);
           const form = event.target as HTMLFormElement;
           form.reset();
         }}
@@ -173,7 +173,7 @@ export const ChooseCity = () => {
       >
         <TextField
           id="standard-basic"
-          name="keywordInput"
+          name="cityInput"
           label="Example: Berlin"
           variant="standard"
           sx={{ width: '85%' }}
@@ -193,7 +193,7 @@ export const ChooseCity = () => {
           Add
         </Button>
       </Box>
-      <Box>{keywordBtns}</Box>
+      <Box>{citiesBtns}</Box>
     </Box>
   );
 };
