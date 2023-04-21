@@ -22,6 +22,50 @@ export const StartParser = () => {
     };
   }, []);
 
+  const handleStart = async () => {
+    setIsLoading(true);
+    setErrorAlert(false);
+    try {
+      const response = await fetch('http://localhost:3001/api/v1/start', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        setIsLoading(false);
+        console.log('starting parser...');
+      } else {
+        setErrorAlert(true);
+      }
+    } catch (err) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStop = async () => {
+    setIsLoading(true);
+    setErrorAlert(false);
+    try {
+      const response = await fetch('http://localhost:3001/api/v1/stop', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        setIsLoading(false);
+        console.log('stop parser...');
+      } else {
+        setErrorAlert(true);
+      }
+    } catch (err) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
@@ -45,10 +89,22 @@ export const StartParser = () => {
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        <Button variant="contained" size="large" sx={{ mr: 2, backgroundColor: palette.primary.light }}>
+        <Button
+          variant="contained"
+          size="large"
+          sx={{ mr: 2, backgroundColor: palette.primary.light, '&:hover': { backgroundColor: palette.primary.light } }}
+          onClick={handleStart}
+        >
           START
         </Button>
-        <Button variant="contained" size="large">
+        <Button
+          variant="contained"
+          size="large"
+          sx={{
+            '&:hover': { backgroundColor: palette.primary.main },
+          }}
+          onClick={handleStop}
+        >
           STOP
         </Button>
       </Box>
