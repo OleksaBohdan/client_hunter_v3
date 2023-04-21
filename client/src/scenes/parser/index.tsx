@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import { ChooseWebsite } from './ChooseParser';
 import { ChooseKeyword } from './ChooseKeyword';
 import { ChooseCity } from './ChooseCity';
+import { StartParser } from './StartParser';
 
 const Parser = () => {
   return (
@@ -10,6 +11,7 @@ const Parser = () => {
       <ChooseWebsite />
       <ChooseKeyword />
       <ChooseCity />
+      <StartParser />
     </Box>
   );
 };
