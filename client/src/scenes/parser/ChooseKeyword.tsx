@@ -71,6 +71,11 @@ export const ChooseKeyword = () => {
     if (keyword === '') {
       return;
     }
+
+    if (keyword.length > 50) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:3001/api/v1/keyword', {

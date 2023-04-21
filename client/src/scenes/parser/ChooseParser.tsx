@@ -40,6 +40,8 @@ export const ChooseWebsite = () => {
       return;
     }
 
+    setIsLoading(true);
+
     const prevParser = user.parser;
 
     dispatch(setChoosenParser({ parser: id }));
@@ -60,6 +62,8 @@ export const ChooseWebsite = () => {
     } catch (error) {
       setErrorAlert(true);
       dispatch(setChoosenParser({ parser: prevParser }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
