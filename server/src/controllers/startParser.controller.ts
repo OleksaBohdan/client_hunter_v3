@@ -4,6 +4,8 @@ import { User } from '../databases/mongo/models/User.js';
 import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
 
+export const stopFlags = new Map();
+
 export async function startParser(req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.userId;
@@ -13,24 +15,28 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
     }
 
     const user = await User.findById(req.userId).populate('activeCity').populate('activeKeyword');
-    const parser = await Parser.find(user?.parser);
 
     if (!user) {
       throw HttpError(404, 'User does not exist');
     }
 
+    const parser = await Parser.find(user.parser);
+
     if (!parser) {
-      throw HttpError(404, 'Parser does not choosen');
+      throw HttpError(404, 'Parser not chosen');
     }
 
-    const { city } = user.activeCity;
-    const { keyword } = user.activeKeyword;
-
-    console.log(city, keyword);
+    const position = user.activeKeyword ? user.activeKeyword.keyword : '';
+    const city = user.activeCity ? user.activeCity.city : '';
 
     switch (parser[0].name) {
       case 'jobbank.gc.ca':
-        // runCaJobankParser(user);
+        res.status(200).json({ message: 'Parser started succesfully' });
+        try {
+          await runCaJobankParser(user, city, position);
+        } catch (err) {
+          console.log(err);
+        }
         console.log('running jobbank.gc.ca');
         break;
       case 'xing.com':
@@ -40,8 +46,22 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
         console.log('running linkedin.com');
         break;
     }
+  } catch (err) {
+    next(err);
+  }
+}
 
-    res.status(200).json({ message: 'Parser started succesfully' });
+export async function stopParser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.userId;
+
+    if (!id) {
+      throw HttpError(401, 'Unauthorized');
+    }
+
+    stopFlags.set(id, true);
+
+    res.status(200).json({ message: 'Parser stop requested.' });
   } catch (err) {
     next(err);
   }

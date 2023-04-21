@@ -6,8 +6,8 @@ import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
 import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
 import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
-import { City } from '../../../databases/mongo/models/City.js';
-import { Keyword } from '../../../databases/mongo/models/Keyword.js';
+
+import { stopFlags } from '../../../controllers/startParser.controller.js';
 
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
@@ -31,9 +31,6 @@ const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
 export async function runCaJobankParser(user: IUser, city: string, position: string) {
-  const PARALLEL_PAGE = 3;
-  let VACANCY_LINKS: string[] = [];
-
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: {
@@ -41,6 +38,22 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       height: 900,
     },
   });
+
+  async function process() {
+    if (stopFlags.get(user._id.toString())) {
+      await browser.close();
+      stopFlags.delete(user._id.toString());
+      return;
+    }
+
+    if (user._id.toString()) {
+      setTimeout(process, 1000);
+    }
+  }
+  process();
+
+  const PARALLEL_PAGE = 3;
+  let VACANCY_LINKS: string[] = [];
 
   const page = await browser.newPage();
   try {
