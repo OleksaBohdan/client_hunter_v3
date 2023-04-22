@@ -12,6 +12,16 @@ export const StartParser = () => {
   const [errorAlert, setErrorAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(10);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const addNotification = (message: string, type: 'success' | 'warning' | 'error' | 'regular') => {
+    const newNotification: Notification = {
+      message,
+      type,
+      timestamp: new Date().toLocaleString(),
+    };
+    setNotifications((prevState) => [...prevState, newNotification]);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,6 +43,10 @@ export const StartParser = () => {
 
       if (response.status === 200) {
         setIsLoading(false);
+        addNotification('Start parser...', 'regular');
+      } else if (response.status === 403) {
+        setIsLoading(false);
+        addNotification('Parser already running.', 'warning');
       } else {
         setErrorAlert(true);
       }
@@ -54,6 +68,7 @@ export const StartParser = () => {
 
       if (response.status === 200) {
         setIsLoading(false);
+        addNotification('Stop parser...', 'regular');
       } else {
         setErrorAlert(true);
       }
@@ -83,7 +98,7 @@ export const StartParser = () => {
       </Typography>
 
       <Box>
-        <NotificationFeed />
+        <NotificationFeed notifications={notifications} addNotification={addNotification} />
       </Box>
 
       <Box sx={{ mt: 2 }}>
@@ -110,25 +125,9 @@ export const StartParser = () => {
   );
 };
 
-// PROGRESS FEED
-
-function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ width: '100%', mr: 1 }}>
-        <LinearProgress variant="determinate" {...props} sx={{ height: 7 }} />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">{`${Math.round(props.value)}%`}</Typography>
-      </Box>
-    </Box>
-  );
-}
-
 // NITIFICATION FEED
 
-const NotificationFeed = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+const NotificationFeed = ({ notifications, addNotification }: NotificationFeedProps) => {
   const notificationBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -137,25 +136,8 @@ const NotificationFeed = () => {
     }
   }, [notifications]);
 
-  const addNotification = (message: string, type: 'success' | 'warning' | 'error' | 'regular') => {
-    const newNotification: Notification = {
-      message,
-      type,
-      timestamp: new Date().toLocaleString(),
-    };
-    setNotifications((prevState) => [...prevState, newNotification]);
-  };
-
-  const onAdd = () => {
-    addNotification('hello test', 'regular');
-  };
-
   return (
-    <Box
-      ref={notificationBoxRef}
-      sx={{ backgroundColor: '#212121', color: 'white', height: 300, overflowY: 'auto' }}
-      onClick={onAdd}
-    >
+    <Box ref={notificationBoxRef} sx={{ backgroundColor: '#212121', color: 'white', height: 300, overflowY: 'auto' }}>
       {notifications.map((notification, index) => (
         <Typography
           key={index}
@@ -182,6 +164,11 @@ interface Notification {
   timestamp: string;
 }
 
+interface NotificationFeedProps {
+  notifications: Notification[];
+  addNotification: (message: string, type: 'success' | 'warning' | 'error' | 'regular') => void;
+}
+
 const typeToColor = (type: 'success' | 'warning' | 'error' | 'regular') => {
   switch (type) {
     case 'success':
@@ -196,3 +183,18 @@ const typeToColor = (type: 'success' | 'warning' | 'error' | 'regular') => {
       return 'white';
   }
 };
+
+// PROGRESS FEED
+
+function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ width: '100%', mr: 1 }}>
+        <LinearProgress variant="determinate" {...props} sx={{ height: 7 }} />
+      </Box>
+      <Box sx={{ minWidth: 35 }}>
+        <Typography variant="body2" color="text.secondary">{`${Math.round(props.value)}%`}</Typography>
+      </Box>
+    </Box>
+  );
+}
