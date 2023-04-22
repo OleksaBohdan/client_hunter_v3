@@ -5,6 +5,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import { themeSettings } from './theme';
 import { useSelector } from 'react-redux';
+import { WebSocketProvider } from './websocket/WebSocketContext';
 
 function App() {
   const theme = createTheme(themeSettings());
@@ -13,13 +14,15 @@ function App() {
   return (
     <div className="app">
       <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Routes>
-            <Route path="/" element={isAuth ? <Navigate to="/home" /> : <LoginPage />} />
-            <Route path="/home" element={isAuth ? <HomePage /> : <Navigate to="/" />} />
-          </Routes>
-        </ThemeProvider>
+        <WebSocketProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Routes>
+              <Route path="/" element={isAuth ? <Navigate to="/home" /> : <LoginPage />} />
+              <Route path="/home" element={isAuth ? <HomePage /> : <Navigate to="/" />} />
+            </Routes>
+          </ThemeProvider>
+        </WebSocketProvider>
       </BrowserRouter>
     </div>
   );

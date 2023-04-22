@@ -3,7 +3,11 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { createServer } from 'http';
+import * as WebSocket from 'ws';
 import { HttpError } from 'http-errors';
+import { setupWebSocketHandlers } from './websocket/index.websocket.js';
+
 import { authRoute } from './routes/auth.route.js';
 import { userRoute } from './routes/user.route.js';
 import { parserRoute } from './routes/parser.route.js';
@@ -11,7 +15,10 @@ import { keywordRoute } from './routes/keyword.route.js';
 import { cityRoute } from './routes/city.route.js';
 import { startParserRoute } from './routes/startParser.route.js';
 
-export const app = express();
+const app = express();
+const server = createServer(app);
+const wss = new WebSocket.WebSocketServer({ server });
+
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
@@ -33,3 +40,7 @@ app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).json({ message: err.message });
   return;
 });
+
+setupWebSocketHandlers();
+
+export { server, wss };

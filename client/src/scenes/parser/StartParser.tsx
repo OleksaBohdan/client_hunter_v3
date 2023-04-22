@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, Button, Alert, useTheme } from '@mui/material';
 import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgress';
 import { IMainState } from '../../state';
+import { useWebSocket } from '../../websocket/WebSocketContext';
 
 export const StartParser = () => {
   const dispatch = useDispatch();
@@ -13,6 +14,24 @@ export const StartParser = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(10);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const { socket } = useWebSocket();
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (socket) {
+      socket.addEventListener('message', (event) => {
+        console.log('Message from server:', event.data);
+        addNotification(event.data, 'success');
+      });
+    }
+  }, [socket]);
+
+  const onStart = () => {
+    if (socket) {
+      socket.send(JSON.stringify({ id: user?._id, command: 'START' }));
+    }
+  };
 
   const addNotification = (message: string, type: 'success' | 'warning' | 'error' | 'regular') => {
     const newNotification: Notification = {
@@ -119,6 +138,14 @@ export const StartParser = () => {
           onClick={handleStop}
         >
           STOP
+        </Button>
+        <Button
+          variant="contained"
+          size="large"
+          sx={{ mr: 2, backgroundColor: palette.primary.light, '&:hover': { backgroundColor: palette.primary.light } }}
+          onClick={onStart}
+        >
+          START
         </Button>
       </Box>
     </Box>

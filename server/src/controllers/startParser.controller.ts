@@ -22,14 +22,11 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
 
     const parser = await Parser.findById(user.parser);
 
-    console.log('parser:', parser);
-
     if (!parser) {
       throw HttpError(404, 'Parser not chosen');
     }
 
     if (stopFlags.get(id) == false) {
-      console.log('Parser alreay run');
       res.status(403).json({ message: 'Parser alreay run' });
       return;
     }
@@ -40,8 +37,9 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
     switch (parser.name) {
       case 'jobbank.gc.ca':
         res.status(200).json({ message: 'Parser started succesfully' });
+
         try {
-          await runCaJobankParser(user, city, position);
+          // await runCaJobankParser(user, city, position);
         } catch (err) {
           stopFlags.set(id, true);
         }

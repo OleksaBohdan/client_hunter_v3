@@ -9,6 +9,8 @@ import { readCompaniesVacancyLink } from '../../repositories/company.service.js'
 
 import { stopFlags } from '../../../controllers/startParser.controller.js';
 
+import WebSocket from 'ws';
+
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
 const outOfCanadaModal: any = 'a[onclick*="outOfCanadaCloseBtn"][id="j_id_5i:outOfCanadaCloseBtn"][title="Cancel"]';
@@ -30,7 +32,9 @@ const postCreatedSelector: any = 'p.date-business span.date';
 const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
-export async function runCaJobankParser(user: IUser, city: string, position: string) {
+export async function runCaJobankParser(user: IUser, city: string, position: string, socket: WebSocket) {
+  socket.send('Hi from parser');
+
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
 
