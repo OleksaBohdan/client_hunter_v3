@@ -40,6 +40,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   stopFlags.set(user._id.toString(), false);
 
+  socket.send('Lounching browser...');
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: {
@@ -63,11 +64,13 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   const page = await browser.newPage();
   try {
+    socket.send('Going to homepage');
     await page.goto(homePage);
   } catch (err) {
     try {
       await page.goto(homePage);
     } catch (err) {
+      socket.send('FINISH');
       console.log('FINISH');
       await browser.close();
     }
@@ -78,6 +81,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     await page.waitForSelector(outOfCanadaModal, { timeout: 5000 });
     const closeModalButton = await page.$(outOfCanadaModal);
     if (closeModalButton) {
+      socket.send('Closing bad modal...');
       await closeModalButton.click();
     }
   } catch (err) {
@@ -108,6 +112,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   // click to search
   try {
+    socket.send('Seraching vacancies...');
     await page.waitForSelector(searchButtonSelector);
     const searchButton = await page.$(searchButtonSelector);
     if (searchButton) {
@@ -121,7 +126,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   try {
     await page.waitForSelector(numberOfVacanciesSelector);
     const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
+    socket.send(`Found ${numberOfVacancies} vacancies`);
     if (numberOfVacancies === '0') {
+      socket.send(`FINISH - VACANCIES NOT FOUND`);
       console.log('FINISH - VACANCIES NOT FOUND');
       await browser.close();
       return;
@@ -171,6 +178,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   console.log('existingLinks', existingLinks.length);
   console.log('new VACANCY_LINKS', VACANCY_LINKS.length);
+  socket.send(`Founded new vacancies: ${VACANCY_LINKS.length}`);
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -186,6 +194,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     await Promise.all(promises);
   }
 
+  socket.send(`FINISH`);
   console.log('FINISH');
   await browser.close();
 }
