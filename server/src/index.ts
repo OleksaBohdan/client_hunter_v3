@@ -2,6 +2,11 @@ import { app } from './app.js';
 import { connectMongoDB } from './databases/mongo/connect.js';
 import { PORT, MONGODB_URL, PARSER_NAMES } from './configs/app.config.js';
 import { createParser } from './services/repositories/parser.service.js';
+import { createServer } from 'http';
+import * as WebSocket from 'ws';
+
+const server = createServer(app);
+export const wss = new WebSocket.WebSocketServer({ server });
 
 async function startServer() {
   try {
@@ -13,7 +18,7 @@ async function startServer() {
       } catch (err) {}
     }
 
-    app.listen(PORT, '0.0.0.0', () => {
+    server.listen(PORT, () => {
       console.log(`Client hunter v3 – app listening at port:${PORT}`);
     });
   } catch (err) {
