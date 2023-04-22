@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, Button, Alert, useTheme } from '@mui/material';
 import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgress';
@@ -33,7 +33,6 @@ export const StartParser = () => {
 
       if (response.status === 200) {
         setIsLoading(false);
-        console.log('starting parser...');
       } else {
         setErrorAlert(true);
       }
@@ -55,7 +54,6 @@ export const StartParser = () => {
 
       if (response.status === 200) {
         setIsLoading(false);
-        console.log('stop parser...');
       } else {
         setErrorAlert(true);
       }
@@ -129,24 +127,48 @@ function LinearProgressWithLabel(props: LinearProgressProps & { value: number })
 
 // NITIFICATION FEED
 
-interface Notification {
-  message: string;
-  type: 'success' | 'warning' | 'error';
-}
-
 const NotificationFeed = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notificationBoxRef = useRef<HTMLDivElement>(null);
 
-  const addNotification = (message: string, type: 'success' | 'warning' | 'error') => {
-    const newNotification: Notification = { message, type };
+  useEffect(() => {
+    if (notificationBoxRef.current) {
+      notificationBoxRef.current.scrollTop = notificationBoxRef.current.scrollHeight;
+    }
+  }, [notifications]);
+
+  const addNotification = (message: string, type: 'success' | 'warning' | 'error' | 'regular') => {
+    const newNotification: Notification = {
+      message,
+      type,
+      timestamp: new Date().toLocaleString(),
+    };
     setNotifications((prevState) => [...prevState, newNotification]);
   };
 
+  const onAdd = () => {
+    addNotification('hello test', 'regular');
+  };
+
   return (
-    <Box sx={{ backgroundColor: '#212121', color: 'white', height: 300, overflowY: 'auto' }}>
+    <Box
+      ref={notificationBoxRef}
+      sx={{ backgroundColor: '#212121', color: 'white', height: 300, overflowY: 'auto' }}
+      onClick={onAdd}
+    >
       {notifications.map((notification, index) => (
-        <Typography key={index} variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
-          {`[${new Date().toLocaleString()}] `}
+        <Typography
+          key={index}
+          variant="body2"
+          sx={{
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+          }}
+        >
+          {`[${notification.timestamp}] `}
           <span style={{ color: typeToColor(notification.type) }}>{notification.message}</span>
         </Typography>
       ))}
@@ -154,7 +176,13 @@ const NotificationFeed = () => {
   );
 };
 
-const typeToColor = (type: 'success' | 'warning' | 'error') => {
+interface Notification {
+  message: string;
+  type: 'success' | 'warning' | 'error' | 'regular';
+  timestamp: string;
+}
+
+const typeToColor = (type: 'success' | 'warning' | 'error' | 'regular') => {
   switch (type) {
     case 'success':
       return 'green';
@@ -162,6 +190,8 @@ const typeToColor = (type: 'success' | 'warning' | 'error') => {
       return 'orange';
     case 'error':
       return 'red';
+    case 'regular':
+      return 'white';
     default:
       return 'white';
   }
