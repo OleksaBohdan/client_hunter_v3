@@ -10,6 +10,7 @@ import { readCompaniesVacancyLink } from '../../repositories/company.service.js'
 import { stopFlags } from '../../../controllers/startParser.controller.js';
 
 import WebSocket from 'ws';
+import { IMessage } from '../../../websocket/index.websocket.js';
 
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
@@ -33,14 +34,17 @@ const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
 export async function runCaJobankParser(user: IUser, city: string, position: string, socket: WebSocket) {
-  socket.send('Hi from parser');
-
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
 
   stopFlags.set(user._id.toString(), false);
 
-  socket.send('Lounching browser...');
+  const message: IMessage = {
+    message: 'Lounching parser...',
+    type: 'regular',
+  };
+  socket.send(JSON.stringify(message));
+
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: {
@@ -51,6 +55,11 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   async function process() {
     if (stopFlags.get(user._id.toString())) {
+      const message: IMessage = {
+        message: `STOP`,
+        type: 'regular',
+      };
+      socket.send(JSON.stringify(message));
       await browser.close();
       stopFlags.delete(user._id.toString());
       return;
@@ -64,13 +73,21 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   const page = await browser.newPage();
   try {
-    socket.send('Going to homepage');
+    const message: IMessage = {
+      message: `Going to website: ${homePage}`,
+      type: 'regular',
+    };
+    socket.send(JSON.stringify(message));
     await page.goto(homePage);
   } catch (err) {
     try {
       await page.goto(homePage);
     } catch (err) {
-      socket.send('FINISH');
+      const message: IMessage = {
+        message: `Parser has finished work`,
+        type: 'warning',
+      };
+      socket.send(JSON.stringify(message));
       console.log('FINISH');
       await browser.close();
     }
@@ -81,7 +98,12 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     await page.waitForSelector(outOfCanadaModal, { timeout: 5000 });
     const closeModalButton = await page.$(outOfCanadaModal);
     if (closeModalButton) {
-      socket.send('Closing bad modal...');
+      const message: IMessage = {
+        message: `Closing bad modal...`,
+        type: 'regular',
+      };
+      socket.send(JSON.stringify(message));
+
       await closeModalButton.click();
     }
   } catch (err) {
@@ -112,7 +134,12 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   // click to search
   try {
-    socket.send('Seraching vacancies...');
+    const message: IMessage = {
+      message: `Seraching vacancies...`,
+      type: 'regular',
+    };
+    socket.send(JSON.stringify(message));
+
     await page.waitForSelector(searchButtonSelector);
     const searchButton = await page.$(searchButtonSelector);
     if (searchButton) {
@@ -126,9 +153,19 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   try {
     await page.waitForSelector(numberOfVacanciesSelector);
     const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
-    socket.send(`Found ${numberOfVacancies} vacancies`);
+    const message: IMessage = {
+      message: `Found ${numberOfVacancies} vacancies`,
+      type: 'success',
+    };
+    socket.send(JSON.stringify(message));
+
     if (numberOfVacancies === '0') {
-      socket.send(`FINISH - VACANCIES NOT FOUND`);
+      const message: IMessage = {
+        message: `FINISH - VACANCIES NOT FOUND`,
+        type: 'warning',
+      };
+      socket.send(JSON.stringify(message));
+
       console.log('FINISH - VACANCIES NOT FOUND');
       await browser.close();
       return;
@@ -178,7 +215,12 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   console.log('existingLinks', existingLinks.length);
   console.log('new VACANCY_LINKS', VACANCY_LINKS.length);
-  socket.send(`Founded new vacancies: ${VACANCY_LINKS.length}`);
+
+  const messageNewVac: IMessage = {
+    message: `Found new vacancies: ${VACANCY_LINKS.length}`,
+    type: 'success',
+  };
+  socket.send(JSON.stringify(messageNewVac));
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -189,12 +231,18 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   for (let i = 0; i < VACANCY_LINKS.length; i += PARALLEL_PAGE) {
     const promises = [];
     for (let j = 0; j < PARALLEL_PAGE && i + j < VACANCY_LINKS.length; j++) {
-      promises.push(parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position, existingEmails));
+      promises.push(
+        parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position, existingEmails, socket),
+      );
     }
     await Promise.all(promises);
   }
 
-  socket.send(`FINISH`);
+  const messageFinish: IMessage = {
+    message: `Parser has finished work`,
+    type: 'warning',
+  };
+  socket.send(JSON.stringify(messageFinish));
   console.log('FINISH');
   await browser.close();
 }
@@ -206,6 +254,7 @@ async function parseVacancyPage(
   positionKeyword: string,
   placeKeyword: string,
   emails: string[],
+  socket: WebSocket,
 ) {
   const newCompany: ICompany = new Company();
 
@@ -215,6 +264,7 @@ async function parseVacancyPage(
 
   try {
     await page.goto(link);
+    socket.send(JSON.stringify(socketMessage(`Go to link ${link}`, 'regular')));
 
     // click btn - 'HOW TO APPLY'
     try {
@@ -237,6 +287,7 @@ async function parseVacancyPage(
           return;
         }
 
+        socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
         newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
       }
@@ -315,4 +366,13 @@ async function parseVacancyPage(
   } catch (err) {
     // console.log(err);
   }
+}
+
+export function socketMessage(text: string, type: 'success' | 'warning' | 'error' | 'regular') {
+  const message: IMessage = {
+    message: text,
+    type: type,
+  };
+
+  return message;
 }
