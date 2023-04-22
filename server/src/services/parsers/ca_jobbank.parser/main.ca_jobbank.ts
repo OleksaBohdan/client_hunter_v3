@@ -31,6 +31,11 @@ const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
 
 export async function runCaJobankParser(user: IUser, city: string, position: string) {
+  const PARALLEL_PAGE = 3;
+  let VACANCY_LINKS: string[] = [];
+
+  stopFlags.set(user._id.toString(), false);
+
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: {
@@ -51,9 +56,6 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     }
   }
   process();
-
-  const PARALLEL_PAGE = 3;
-  let VACANCY_LINKS: string[] = [];
 
   const page = await browser.newPage();
   try {

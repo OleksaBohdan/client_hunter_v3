@@ -8,7 +8,7 @@ export interface IKeyword extends Document {
 
 const KeywordSchema: Schema = new Schema<IKeyword>(
   {
-    keyword: { type: String, unique: true, required: true },
+    keyword: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   {

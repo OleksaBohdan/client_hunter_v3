@@ -8,7 +8,7 @@ export interface ICity extends Document {
 
 const CitySchema: Schema = new Schema<ICity>(
   {
-    city: { type: String, unique: true, required: true },
+    city: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   {

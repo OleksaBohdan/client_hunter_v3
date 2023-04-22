@@ -20,29 +20,39 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
       throw HttpError(404, 'User does not exist');
     }
 
-    const parser = await Parser.find(user.parser);
+    const parser = await Parser.findById(user.parser);
+
+    console.log('parser:', parser);
 
     if (!parser) {
       throw HttpError(404, 'Parser not chosen');
     }
 
+    if (stopFlags.get(id) == false) {
+      console.log('Parser alreay run');
+      res.status(403).json({ message: 'Parser alreay run' });
+      return;
+    }
+
     const position = user.activeKeyword ? user.activeKeyword.keyword : '';
     const city = user.activeCity ? user.activeCity.city : '';
 
-    switch (parser[0].name) {
+    switch (parser.name) {
       case 'jobbank.gc.ca':
         res.status(200).json({ message: 'Parser started succesfully' });
         try {
           await runCaJobankParser(user, city, position);
         } catch (err) {
-          console.log(err);
+          stopFlags.set(id, true);
         }
         console.log('running jobbank.gc.ca');
         break;
       case 'xing.com':
+        res.status(200).json({ message: 'Parser started succesfully' });
         console.log('running xing.com');
         break;
       case 'linkedin.com':
+        res.status(200).json({ message: 'Parser started succesfully' });
         console.log('running linkedin.com');
         break;
     }
