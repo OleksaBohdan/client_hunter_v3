@@ -12,17 +12,21 @@ export const StartParser = () => {
   const { palette } = useTheme();
   const [errorAlert, setErrorAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(10);
+  const [progress, setProgress] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const { socket } = useWebSocket();
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (socket) {
       socket.addEventListener('message', (event) => {
         const msgObj = JSON.parse(event.data);
         const { message, type } = msgObj;
+
+        if (type === 'progress') {
+          setProgress(message);
+        }
+
         addNotification(message, type);
       });
     }
@@ -36,6 +40,7 @@ export const StartParser = () => {
 
   const onStop = () => {
     if (socket) {
+      setProgress(0);
       socket.send(JSON.stringify({ id: user?._id, command: 'STOP' }));
     }
   };
@@ -49,61 +54,14 @@ export const StartParser = () => {
     setNotifications((prevState) => [...prevState, newNotification]);
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress + 10));
-    }, 800);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  // const handleStart = async () => {
-  //   setIsLoading(true);
-  //   setErrorAlert(false);
-  //   try {
-  //     const response = await fetch('http://localhost:3001/api/v1/start', {
-  //       method: 'GET',
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     if (response.status === 200) {
-  //       setIsLoading(false);
-  //       addNotification('Start parser...', 'regular');
-  //     } else if (response.status === 403) {
-  //       setIsLoading(false);
-  //       addNotification('Parser already running.', 'warning');
-  //     } else {
-  //       setErrorAlert(true);
-  //     }
-  //   } catch (err) {
-  //     setErrorAlert(true);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // const handleStop = async () => {
-  //   setIsLoading(true);
-  //   setErrorAlert(false);
-  //   try {
-  //     const response = await fetch('http://localhost:3001/api/v1/stop', {
-  //       method: 'GET',
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     if (response.status === 200) {
-  //       setIsLoading(false);
-  //       addNotification('Stop parser...', 'regular');
-  //     } else {
-  //       setErrorAlert(true);
-  //     }
-  //   } catch (err) {
-  //     setErrorAlert(true);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress + 10));
+  //   }, 800);
+  //   return () => {
+  //     clearInterval(timer);
+  //   };
+  // }, []);
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
@@ -128,24 +86,6 @@ export const StartParser = () => {
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        {/* <Button
-          variant="contained"
-          size="large"
-          sx={{ mr: 2, backgroundColor: palette.primary.light, '&:hover': { backgroundColor: palette.primary.light } }}
-          onClick={handleStart}
-        >
-          START
-        </Button>
-        <Button
-          variant="contained"
-          size="large"
-          sx={{
-            '&:hover': { backgroundColor: palette.primary.main },
-          }}
-          onClick={handleStop}
-        >
-          STOP
-        </Button> */}
         <Button
           variant="contained"
           size="large"

@@ -4,6 +4,7 @@ import { ChooseWebsite } from './ChooseParser';
 import { ChooseKeyword } from './ChooseKeyword';
 import { ChooseCity } from './ChooseCity';
 import { StartParser } from './StartParser';
+import { ParsingResults } from './ParsingResults';
 
 const Parser = () => {
   return (
@@ -12,18 +13,9 @@ const Parser = () => {
       <ChooseKeyword />
       <ChooseCity />
       <StartParser />
+      <ParsingResults />
     </Box>
   );
 };
 
 export default Parser;
-
-// Choose parser website +
-
-// Choose keywords +
-
-// Choose city +
-
-// Run parser + parsing status
-
-// Download results + marketing flow
