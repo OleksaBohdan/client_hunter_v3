@@ -21,8 +21,9 @@ export const StartParser = () => {
   useEffect(() => {
     if (socket) {
       socket.addEventListener('message', (event) => {
-        console.log('Message from server:', event.data);
-        addNotification(event.data, 'success');
+        const msgObj = JSON.parse(event.data);
+        const { message, type } = msgObj;
+        addNotification(message, type);
       });
     }
   }, [socket]);
@@ -30,6 +31,12 @@ export const StartParser = () => {
   const onStart = () => {
     if (socket) {
       socket.send(JSON.stringify({ id: user?._id, command: 'START' }));
+    }
+  };
+
+  const onStop = () => {
+    if (socket) {
+      socket.send(JSON.stringify({ id: user?._id, command: 'STOP' }));
     }
   };
 
@@ -51,52 +58,52 @@ export const StartParser = () => {
     };
   }, []);
 
-  const handleStart = async () => {
-    setIsLoading(true);
-    setErrorAlert(false);
-    try {
-      const response = await fetch('http://localhost:3001/api/v1/start', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  // const handleStart = async () => {
+  //   setIsLoading(true);
+  //   setErrorAlert(false);
+  //   try {
+  //     const response = await fetch('http://localhost:3001/api/v1/start', {
+  //       method: 'GET',
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
 
-      if (response.status === 200) {
-        setIsLoading(false);
-        addNotification('Start parser...', 'regular');
-      } else if (response.status === 403) {
-        setIsLoading(false);
-        addNotification('Parser already running.', 'warning');
-      } else {
-        setErrorAlert(true);
-      }
-    } catch (err) {
-      setErrorAlert(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (response.status === 200) {
+  //       setIsLoading(false);
+  //       addNotification('Start parser...', 'regular');
+  //     } else if (response.status === 403) {
+  //       setIsLoading(false);
+  //       addNotification('Parser already running.', 'warning');
+  //     } else {
+  //       setErrorAlert(true);
+  //     }
+  //   } catch (err) {
+  //     setErrorAlert(true);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  const handleStop = async () => {
-    setIsLoading(true);
-    setErrorAlert(false);
-    try {
-      const response = await fetch('http://localhost:3001/api/v1/stop', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  // const handleStop = async () => {
+  //   setIsLoading(true);
+  //   setErrorAlert(false);
+  //   try {
+  //     const response = await fetch('http://localhost:3001/api/v1/stop', {
+  //       method: 'GET',
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
 
-      if (response.status === 200) {
-        setIsLoading(false);
-        addNotification('Stop parser...', 'regular');
-      } else {
-        setErrorAlert(true);
-      }
-    } catch (err) {
-      setErrorAlert(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (response.status === 200) {
+  //       setIsLoading(false);
+  //       addNotification('Stop parser...', 'regular');
+  //     } else {
+  //       setErrorAlert(true);
+  //     }
+  //   } catch (err) {
+  //     setErrorAlert(true);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
@@ -121,7 +128,7 @@ export const StartParser = () => {
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        <Button
+        {/* <Button
           variant="contained"
           size="large"
           sx={{ mr: 2, backgroundColor: palette.primary.light, '&:hover': { backgroundColor: palette.primary.light } }}
@@ -138,7 +145,7 @@ export const StartParser = () => {
           onClick={handleStop}
         >
           STOP
-        </Button>
+        </Button> */}
         <Button
           variant="contained"
           size="large"
@@ -146,6 +153,17 @@ export const StartParser = () => {
           onClick={onStart}
         >
           START
+        </Button>
+
+        <Button
+          variant="contained"
+          size="large"
+          sx={{
+            '&:hover': { backgroundColor: palette.primary.main },
+          }}
+          onClick={onStop}
+        >
+          STOP
         </Button>
       </Box>
     </Box>
@@ -199,7 +217,7 @@ interface NotificationFeedProps {
 const typeToColor = (type: 'success' | 'warning' | 'error' | 'regular') => {
   switch (type) {
     case 'success':
-      return 'green';
+      return '#42b72a';
     case 'warning':
       return 'orange';
     case 'error':
