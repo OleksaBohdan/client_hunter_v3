@@ -3,11 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Typography,
-  TextField,
   Button,
   Alert,
   useTheme,
-  ButtonGroup,
   LinearProgress,
   Card,
   CardActions,
@@ -22,10 +20,35 @@ export const ParsingResults = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
   const user = useSelector((state: IMainState) => state.user);
-  const cities = useSelector((state: IMainState) => state.cities);
   const { palette } = useTheme();
+  const [companiesCount, setCompaniesCount] = useState<CompanyCount>(defaultCompaniesCount);
   const [errorAlert, setErrorAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchCompaniesCount();
+  }, []);
+
+  const handleUpdateCompaniesCount = async () => {
+    fetchCompaniesCount();
+  };
+  const fetchCompaniesCount = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:3001/api/v1/companies', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      const companiesCount = data.companiesListCount;
+      setCompaniesCount(companiesCount);
+    } catch (error) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
@@ -37,43 +60,42 @@ export const ParsingResults = () => {
         </Alert>
       )}
 
-      <StatusCards />
+      <Button
+        variant="contained"
+        sx={{
+          '&:hover': { backgroundColor: palette.primary.main },
+          mt: 2,
+        }}
+        onClick={handleUpdateCompaniesCount}
+      >
+        update results
+      </Button>
+      <StatusCards companiesCount={companiesCount || {}} />
     </Box>
   );
 };
 
-const EqualHeightCard = styled(Card)(({ theme }) => ({
-  m: 1,
-  // minWidth: '200px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  height: '100%',
-}));
-
-function StatusCards() {
-  const cardsData = [
-    ['New', 200, 20],
-    ['Updated', 100, 10],
-    ['Deleted', 50, 5],
-    ['Archived', 80, 8],
-    ['Archived', 80, 8],
-    ['Archived', 80, 8],
-    ['Archived', 80, 8],
-  ];
+function StatusCards({ companiesCount }: { companiesCount: CompanyCount }) {
+  const EqualHeightCard = styled(Card)(({ theme }) => ({
+    m: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    height: '100%',
+  }));
 
   return (
     <Box sx={{ mt: 2 }}>
       <Grid container spacing={2}>
-        {cardsData.map(([title, value, percentage], index) => (
+        {Object.entries(companiesCount).map(([key, value], index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <EqualHeightCard>
-              <CardContent sx={{ display: 'flex' }}>
+              <CardContent sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h5" color="text.secondary" gutterBottom>
-                  {title}
+                  {key.charAt(0).toUpperCase() + key.slice(1)} list
                 </Typography>
                 <Typography variant="h4" color="text.primary">
-                  {value} | {percentage}%
+                  {value.count} | {value.percent}%
                 </Typography>
               </CardContent>
               <CardActions>
@@ -87,4 +109,48 @@ function StatusCards() {
   );
 }
 
-export default StatusCards;
+interface CompanyCount {
+  all: {
+    count: number;
+    percent: number;
+  };
+  white: {
+    count: number;
+    percent: number;
+  };
+  grey: {
+    count: number;
+    percent: number;
+  };
+  black: {
+    count: number;
+    percent: number;
+  };
+  request: {
+    count: number;
+    percent: number;
+  };
+  process: {
+    count: number;
+    percent: number;
+  };
+  reject: {
+    count: number;
+    percent: number;
+  };
+  success: {
+    count: number;
+    percent: number;
+  };
+}
+
+const defaultCompaniesCount: CompanyCount = {
+  all: { count: 0, percent: 0 },
+  white: { count: 0, percent: 0 },
+  grey: { count: 0, percent: 0 },
+  black: { count: 0, percent: 0 },
+  request: { count: 0, percent: 0 },
+  process: { count: 0, percent: 0 },
+  reject: { count: 0, percent: 0 },
+  success: { count: 0, percent: 0 },
+};
