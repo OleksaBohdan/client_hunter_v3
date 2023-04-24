@@ -4,8 +4,6 @@ import { User } from '../databases/mongo/models/User.js';
 import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
 
-export const stopFlags = new Map();
-
 // export async function startParser(req: Request, res: Response, next: NextFunction) {
 //   try {
 //     const id = req.userId;

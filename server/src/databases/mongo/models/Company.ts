@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { IUser } from './User.js';
 import { IEmail } from './Email.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum Status {
   WHITE = 'white',
@@ -41,7 +42,7 @@ const CompanySchema: Schema<ICompany> = new Schema<ICompany>(
     positionKeyword: { type: String, default: '' },
     placeKeyword: { type: String, default: '' },
     mailFrom: { type: String },
-    email: { type: String },
+    email: { type: String, unique: true, default: () => uuidv4() },
     phone: { type: String },
     name: { type: String },
     website: { type: String },

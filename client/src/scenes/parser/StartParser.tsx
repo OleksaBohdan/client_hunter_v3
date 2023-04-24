@@ -25,15 +25,17 @@ export const StartParser = () => {
 
         if (type === 'progress') {
           setProgress(message);
+          return;
         }
 
-        addNotification(message, type);
+        addNotification(message.replace('NaN', '0'), type);
       });
     }
   }, [socket]);
 
   const onStart = () => {
     if (socket) {
+      setProgress(0);
       socket.send(JSON.stringify({ id: user?._id, command: 'START' }));
     }
   };
@@ -53,15 +55,6 @@ export const StartParser = () => {
     };
     setNotifications((prevState) => [...prevState, newNotification]);
   };
-
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress + 10));
-  //   }, 800);
-  //   return () => {
-  //     clearInterval(timer);
-  //   };
-  // }, []);
 
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>

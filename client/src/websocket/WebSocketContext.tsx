@@ -19,19 +19,16 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     const ws = new WebSocket('ws://localhost:3001');
 
     ws.addEventListener('open', (event) => {
-      // console.log('WebSocket connected:', event);
       setSocket(ws);
       reconnectAttempts.current = 0;
     });
 
     ws.addEventListener('close', (event) => {
-      // console.log('WebSocket disconnected:', event);
       setSocket(null);
       setReconnect(true);
     });
 
     ws.addEventListener('error', (event) => {
-      // console.error('WebSocket error:', event);
       ws.close();
     });
   };
@@ -53,7 +50,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   useEffect(() => {
     if (reconnect) {
       const timeoutId = setTimeout(() => {
-        // console.log('Attempting to reconnect...');
         reconnectAttempts.current += 1;
         setReconnect(false);
         connect();
