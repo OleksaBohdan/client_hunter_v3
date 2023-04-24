@@ -31,7 +31,10 @@ export async function readCompaniesEmails(u: IUser): Promise<string[]> {
   const companies: ICompany[] = await Company.find({ user: u });
   const emails: string[] = companies.map((company) => company.email);
   const filteredEmails: string[] = emails.filter((email) => email !== '' && email !== undefined);
-  console.log(filteredEmails);
-
   return filteredEmails;
+}
+
+export async function readAllCompanies(u: IUser) {
+  const companies: ICompany[] = await Company.find({ user: u });
+  return companies;
 }

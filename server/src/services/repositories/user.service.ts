@@ -21,6 +21,15 @@ export async function readUser(email: string) {
   }
 }
 
+export async function readUserById(id: string) {
+  try {
+    const user = await User.findById(id);
+    return user;
+  } catch (err) {
+    throw err;
+  }
+}
+
 export async function updateUser(id: string, password: string, newEmail: string) {
   try {
     const salt = bcrypt.genSaltSync();
