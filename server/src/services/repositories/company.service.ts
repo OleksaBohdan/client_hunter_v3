@@ -38,3 +38,8 @@ export async function readAllCompanies(u: IUser) {
   const companies: ICompany[] = await Company.find({ user: u });
   return companies;
 }
+
+export async function readCompaniesByStatus(u: IUser, status: string) {
+  const companies: ICompany[] = await Company.find({ user: u._id, status: status });
+  return companies;
+}

@@ -198,7 +198,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     const promises = [];
     for (let j = 0; j < PARALLEL_PAGE && i + j < VACANCY_LINKS.length; j++) {
       promises.push(
-        parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, city, position, existingEmails, socket),
+        parseVacancyPage(VACANCY_LINKS[i + j], vacancyPages[j], user, position, city, existingEmails, socket),
       );
     }
     await Promise.all(promises);
