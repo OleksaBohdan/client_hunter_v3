@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import HttpError from 'http-errors';
 import { readAllCompanies } from '../services/repositories/company.service.js';
 import { readUserById } from '../services/repositories/user.service.js';
-import { ICompany, Company, Status } from '../databases/mongo/models/Company.js';
+import { ICompany, Status } from '../databases/mongo/models/Company.js';
 import { IUser } from '../databases/mongo/models/User.js';
 import { createObjectCsvWriter } from 'csv-writer';
 import { readCompaniesByStatus } from '../services/repositories/company.service.js';

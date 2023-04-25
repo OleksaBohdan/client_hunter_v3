@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -17,9 +17,7 @@ import { styled } from '@mui/system';
 import { IMainState } from '../../state';
 
 export const ParsingResults = () => {
-  const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
-  const user = useSelector((state: IMainState) => state.user);
   const { palette } = useTheme();
   const [companiesCount, setCompaniesCount] = useState<CompanyCount>(defaultCompaniesCount);
   const [errorAlert, setErrorAlert] = useState(false);
@@ -32,6 +30,7 @@ export const ParsingResults = () => {
   const handleUpdateCompaniesCount = async () => {
     fetchCompaniesCount();
   };
+
   const fetchCompaniesCount = async () => {
     try {
       setIsLoading(true);
@@ -43,6 +42,30 @@ export const ParsingResults = () => {
       const data = await response.json();
       const companiesCount = data.companiesListCount;
       setCompaniesCount(companiesCount);
+    } catch (error) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownload = async (status: string) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`http://localhost:3001/api/v1/companies/${status}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.blob();
+
+      const url = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'companies.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       setErrorAlert(true);
     } finally {
@@ -70,12 +93,18 @@ export const ParsingResults = () => {
       >
         update results
       </Button>
-      <StatusCards companiesCount={companiesCount || {}} />
+
+      <StatusCards companiesCount={companiesCount || {}} handleDownload={handleDownload} />
     </Box>
   );
 };
 
-function StatusCards({ companiesCount }: { companiesCount: CompanyCount }) {
+interface StatusCardsProps {
+  companiesCount: CompanyCount;
+  handleDownload: (status: string) => void;
+}
+
+function StatusCards({ companiesCount, handleDownload }: StatusCardsProps) {
   const EqualHeightCard = styled(Card)(({ theme }) => ({
     m: 1,
     display: 'flex',
@@ -99,7 +128,9 @@ function StatusCards({ companiesCount }: { companiesCount: CompanyCount }) {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button size="small">Download</Button>
+                <Button size="small" onClick={() => handleDownload(key)}>
+                  Download
+                </Button>
               </CardActions>
             </EqualHeightCard>
           </Grid>

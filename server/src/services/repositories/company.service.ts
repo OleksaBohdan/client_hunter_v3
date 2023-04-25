@@ -40,6 +40,10 @@ export async function readAllCompanies(u: IUser) {
 }
 
 export async function readCompaniesByStatus(u: IUser, status: string) {
+  if (status === 'all') {
+    const companies: ICompany[] = await Company.find({ user: u._id });
+    return companies;
+  }
   const companies: ICompany[] = await Company.find({ user: u._id, status: status });
   return companies;
 }
