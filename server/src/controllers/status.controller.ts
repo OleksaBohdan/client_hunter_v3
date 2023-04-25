@@ -20,9 +20,6 @@ export async function changeCompaniesStatus(req: Request, res: Response, next: N
 
     await updateCompanyStatus(status, companies);
 
-    console.log(status);
-    console.log(companies);
-
     res.status(200).json({ message: 'ok' });
   } catch (err) {
     next(err);

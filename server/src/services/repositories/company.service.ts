@@ -58,3 +58,13 @@ export async function updateCompanyStatus(status: Status, companyNames: string[]
     }),
   );
 }
+
+async function deleteCompanies(companyNames: string[]): Promise<void> {
+  try {
+    const deleteResult = await Company.deleteMany({ name: { $in: companyNames } });
+
+    console.log(`Deleted ${deleteResult.deletedCount} companies`);
+  } catch (error) {
+    console.error(error);
+  }
+}

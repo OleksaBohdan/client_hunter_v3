@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Box,
@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 
 import { IMainState } from '../../state';
-import { createReturn } from 'typescript';
 
 export const ChangeStatusList = () => {
   const token = useSelector((state: IMainState) => state.token);
@@ -39,7 +38,6 @@ export const ChangeStatusList = () => {
     try {
       await handleSubmitForm(companies, status);
 
-      console.log(companyNames.trim().split('\n'), status);
       setCompanyNames('');
       setStatus('white');
     } catch (error) {

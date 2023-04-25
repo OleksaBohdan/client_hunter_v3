@@ -7,6 +7,7 @@ import { IUser } from '../databases/mongo/models/User.js';
 import { createObjectCsvWriter } from 'csv-writer';
 import { readCompaniesByStatus } from '../services/repositories/company.service.js';
 import { checkEmail } from '../pkg/checkEmail.js';
+
 import path from 'path';
 
 export async function readCompanies(req: Request, res: Response, next: NextFunction) {
@@ -28,6 +29,25 @@ export async function readCompanies(req: Request, res: Response, next: NextFunct
     const companiesListCount = countCompaniesByStatus(allCompanies, user);
 
     res.status(200).json({ companiesListCount, message: 'ok' });
+  } catch (err) {
+    next(err);
+  }
+}
+export async function deleteCompanies(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.userId;
+
+    if (!id) {
+      throw HttpError(401, 'Unauthorized');
+    }
+
+    const user = await readUserById(id);
+
+    if (!user) {
+      throw HttpError(404, 'User does not exist');
+    }
+
+    res.status(204).json({ message: 'ok' });
   } catch (err) {
     next(err);
   }
