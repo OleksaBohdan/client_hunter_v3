@@ -174,7 +174,7 @@ export const ChooseKeyword = () => {
         <TextField
           id="standard-basic"
           name="keywordInput"
-          label="Example: mechanic"
+          label="Example: Mechanic"
           variant="standard"
           sx={{ width: '85%' }}
         />
