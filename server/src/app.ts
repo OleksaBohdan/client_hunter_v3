@@ -16,6 +16,7 @@ import { cityRoute } from './routes/city.route.js';
 import { startParserRoute } from './routes/startParser.route.js';
 import { companyRoute } from './routes/company.route.js';
 import { blackIndustryRoute } from './routes/blackIndustry.route.js';
+import { statusRoute } from './routes/status.route.js';
 
 const app = express();
 const server = createServer(app);
@@ -37,6 +38,7 @@ app.use('/api/v1/', cityRoute);
 app.use('/api/v1/', startParserRoute);
 app.use('/api/v1/', companyRoute);
 app.use('/api/v1/', blackIndustryRoute);
+app.use('/api/v1/', statusRoute);
 
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;

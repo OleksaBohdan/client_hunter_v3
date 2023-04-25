@@ -1,4 +1,4 @@
-import { Company, ICompany } from '../../databases/mongo/models/Company.js';
+import { Company, ICompany, Status } from '../../databases/mongo/models/Company.js';
 import { User, IUser } from '../../databases/mongo/models/User.js';
 import { Email, IEmail } from '../../databases/mongo/models/Email.js';
 
@@ -46,4 +46,15 @@ export async function readCompaniesByStatus(u: IUser, status: string) {
   }
   const companies: ICompany[] = await Company.find({ user: u._id, status: status });
   return companies;
+}
+
+export async function updateCompanyStatus(status: Status, companyNames: string[]): Promise<void> {
+  const companiesToUpdate = await Company.find({ name: { $in: companyNames } });
+
+  await Promise.all(
+    companiesToUpdate.map(async (company) => {
+      company.status = status;
+      await company.save();
+    }),
+  );
 }
