@@ -6,6 +6,7 @@ import { ICompany, Status } from '../databases/mongo/models/Company.js';
 import { IUser } from '../databases/mongo/models/User.js';
 import { createObjectCsvWriter } from 'csv-writer';
 import { readCompaniesByStatus } from '../services/repositories/company.service.js';
+import { deleteCompanies } from '../services/repositories/company.service.js';
 import { checkEmail } from '../pkg/checkEmail.js';
 
 import path from 'path';
@@ -33,9 +34,10 @@ export async function readCompanies(req: Request, res: Response, next: NextFunct
     next(err);
   }
 }
-export async function deleteCompanies(req: Request, res: Response, next: NextFunction) {
+export async function deleteCompaniesByName(req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.userId;
+    const { companies } = req.body;
 
     if (!id) {
       throw HttpError(401, 'Unauthorized');
@@ -46,6 +48,8 @@ export async function deleteCompanies(req: Request, res: Response, next: NextFun
     if (!user) {
       throw HttpError(404, 'User does not exist');
     }
+
+    await deleteCompanies(companies);
 
     res.status(204).json({ message: 'ok' });
   } catch (err) {
