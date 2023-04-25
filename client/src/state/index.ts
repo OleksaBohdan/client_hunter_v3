@@ -3,13 +3,14 @@ import { User } from '../types/User';
 import { Parsers } from '../types/Parsers';
 import { Keyword } from '../types/Keyword';
 import { City } from '../types/City';
+import { BlackIndustry } from '../types/BlackIndustry';
 
 export interface IMainState {
   user: User | null;
   token: string | null;
   keywords: Keyword[];
   cities: City[];
-  blackIndustries: any | null;
+  blackIndustries: BlackIndustry[];
   emails: any | null;
   companies: any | null;
   parsers: Parsers[];
@@ -20,7 +21,7 @@ const initialState: IMainState = {
   token: null,
   keywords: [],
   cities: [],
-  blackIndustries: null,
+  blackIndustries: [],
   emails: null,
   companies: null,
   parsers: [],
@@ -62,6 +63,9 @@ export const authSlice = createSlice({
         state.user.city = action.payload.city;
       }
     },
+    setBlackIndustrues: (state, action: PayloadAction<{ blackIndustries: BlackIndustry[] }>) => {
+      state.blackIndustries = action.payload.blackIndustries;
+    },
   },
 });
 
@@ -74,5 +78,6 @@ export const {
   setChoosenKeyword,
   setCities,
   setChoosenCity,
+  setBlackIndustrues,
 } = authSlice.actions;
 export default authSlice.reducer;
