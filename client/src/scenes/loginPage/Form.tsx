@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, TextField, useMediaQuery, Typography, useTheme, Alert } from '@mui/material';
-
+import { Box, Button, TextField, Typography, useTheme, Alert } from '@mui/material';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -30,11 +29,9 @@ const initialValuesLogin = {
 const Form = () => {
   const [pageType, setPageType] = useState('register');
   const [alert, setAlert] = useState(null);
-
   const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const isNonMobile = useMediaQuery('(min-width:760px)');
   const isLogin = pageType === 'login';
   const isRegister = pageType === 'register';
 
