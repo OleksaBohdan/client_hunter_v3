@@ -42,7 +42,6 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
         } catch (err) {
           stopFlags.set(id, true);
         }
-        console.log('running jobbank.gc.ca');
         break;
       case 'xing.com':
         res.status(200).json({ message: 'Parser started succesfully' });

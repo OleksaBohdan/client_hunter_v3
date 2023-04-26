@@ -76,14 +76,8 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     socket.send(JSON.stringify(socketMessage(`Going to website: ${homePage}`, 'regular')));
     await page.goto(homePage);
   } catch (err) {
-    try {
-      await page.goto(homePage);
-    } catch (err) {
-      socket.send(
-        JSON.stringify(socketMessage(`Parser has finished work due website error. Please, try again`, 'error')),
-      );
-      await browser.close();
-    }
+    socket.send(JSON.stringify(socketMessage(`Parser terminated unexpectedly. Please, try again`, 'error')));
+    await browser.close();
   }
 
   // close modal
@@ -215,7 +209,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'regular'),
     ),
   );
-  socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'warning')));
+  socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
   stopFlags.delete(user._id.toString());
 
   await browser.close();
