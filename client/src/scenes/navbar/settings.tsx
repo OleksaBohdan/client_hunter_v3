@@ -50,14 +50,14 @@ export function SettingsDialog(props: SimpleDialogProps) {
       <Box
         sx={{
           minWidth: '200px',
-          p: 1,
+          p: 2,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <Box sx={{ p: 1 }}>{user.email}</Box>
+        <Box sx={{ p: 2 }}>{user.email}</Box>
         <Box>
           {!showConfirmation && (
             <Button variant="outlined" color="error" onClick={handleDelete}>

@@ -19,11 +19,9 @@ import {
 import { Settings, Logout, FilterList, Search } from '@mui/icons-material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { setLogout } from '../../state';
-
 import Parser from '../parser';
 import Filters from '../filters';
 import { SettingsDialog } from './settings';
-
 import logo from '../../assets/logo_full.png';
 
 const drawerWidth = 260;
@@ -80,17 +78,17 @@ const ResponsiveNavbar = () => {
       <Box>
         <Divider />
         <List>
-          <ListItemButton>
+          <ListItemButton onClick={handleClickOpen}>
             <ListItemIcon>
               <Settings />
             </ListItemIcon>
-            <ListItemText primary={'Settings'} onClick={handleClickOpen} />
+            <ListItemText primary={'Settings'} />
           </ListItemButton>
-          <ListItemButton>
+          <ListItemButton onClick={() => dispatch(setLogout())}>
             <ListItemIcon>
               <Logout />
             </ListItemIcon>
-            <ListItemText primary={'Logout'} onClick={() => dispatch(setLogout())} />
+            <ListItemText primary={'Logout'} />
           </ListItemButton>
         </List>
       </Box>
