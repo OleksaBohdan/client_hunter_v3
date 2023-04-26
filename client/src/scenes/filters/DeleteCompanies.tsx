@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Box, Typography, Button, Alert, useTheme, LinearProgress, TextField, FormControl } from '@mui/material';
-
 import { IMainState } from '../../state';
 
 export const DeleteCompanies = () => {
@@ -55,7 +54,7 @@ export const DeleteCompanies = () => {
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
       <Typography variant="h5">Delete companies</Typography>
-      <Typography>NOTE: Paste each company name in new row</Typography>
+      <Typography>Note: Paste each company name on a new line</Typography>
 
       {errorAlert && (
         <Alert severity="error" sx={{ marginTop: 1 }}>
@@ -79,7 +78,7 @@ export const DeleteCompanies = () => {
           <Button
             type="submit"
             sx={{
-              width: '15%',
+              width: '120px',
               mt: 2,
               backgroundColor: palette.primary.main,
               color: palette.background.paper,

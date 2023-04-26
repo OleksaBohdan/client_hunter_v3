@@ -14,7 +14,6 @@ import {
   RadioGroup,
   FormLabel,
 } from '@mui/material';
-
 import { IMainState } from '../../state';
 
 export const ChangeStatusList = () => {
@@ -69,8 +68,8 @@ export const ChangeStatusList = () => {
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
-      <Typography variant="h5">Change status list</Typography>
-      <Typography>NOTE: Paste each company name in new row</Typography>
+      <Typography variant="h5">Change company status</Typography>
+      <Typography>Note: Paste each company name on a new line</Typography>
 
       {errorAlert && (
         <Alert severity="error" sx={{ marginTop: 1 }}>
@@ -107,7 +106,7 @@ export const ChangeStatusList = () => {
           <Button
             type="submit"
             sx={{
-              width: '15%',
+              width: '120px',
               mt: 2,
               backgroundColor: palette.primary.main,
               color: palette.background.paper,
