@@ -68,7 +68,7 @@ export const ChooseKeyword = () => {
   };
 
   const handleAddKeyword = async (keyword: string) => {
-    if (keyword === '') {
+    if (keyword.trim() === '') {
       return;
     }
 

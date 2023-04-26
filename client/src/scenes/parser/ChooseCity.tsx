@@ -68,7 +68,7 @@ export const ChooseCity = () => {
   };
 
   const handleAddCity = async (city: string) => {
-    if (city === '') {
+    if (city.trim() === '') {
       return;
     }
 
