@@ -4,71 +4,72 @@ import { User } from '../databases/mongo/models/User.js';
 import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
 
-// export async function startParser(req: Request, res: Response, next: NextFunction) {
-//   try {
-//     const id = req.userId;
+import { stopFlags } from '../websocket/index.websocket.js';
 
-//     if (!id) {
-//       throw HttpError(401, 'Unauthorized');
-//     }
+export async function startParser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.userId;
 
-//     const user = await User.findById(req.userId).populate('activeCity').populate('activeKeyword');
+    if (!id) {
+      throw HttpError(401, 'Unauthorized');
+    }
 
-//     if (!user) {
-//       throw HttpError(404, 'User does not exist');
-//     }
+    const user = await User.findById(req.userId).populate('activeCity').populate('activeKeyword');
 
-//     const parser = await Parser.findById(user.parser);
+    if (!user) {
+      throw HttpError(404, 'User does not exist');
+    }
 
-//     if (!parser) {
-//       throw HttpError(404, 'Parser not chosen');
-//     }
+    const parser = await Parser.findById(user.parser);
 
-//     if (stopFlags.get(id) == false) {
-//       res.status(403).json({ message: 'Parser alreay run' });
-//       return;
-//     }
+    if (!parser) {
+      throw HttpError(404, 'Parser not chosen');
+    }
 
-//     const position = user.activeKeyword ? user.activeKeyword.keyword : '';
-//     const city = user.activeCity ? user.activeCity.city : '';
+    if (stopFlags.get(id) == false) {
+      res.status(403).json({ message: 'Parser alreay run' });
+      return;
+    }
 
-//     switch (parser.name) {
-//       case 'jobbank.gc.ca':
-//         res.status(200).json({ message: 'Parser started succesfully' });
+    const position = user.activeKeyword ? user.activeKeyword.keyword : '';
+    const city = user.activeCity ? user.activeCity.city : '';
 
-//         try {
-//           // await runCaJobankParser(user, city, position);
-//         } catch (err) {
-//           stopFlags.set(id, true);
-//         }
-//         console.log('running jobbank.gc.ca');
-//         break;
-//       case 'xing.com':
-//         res.status(200).json({ message: 'Parser started succesfully' });
-//         console.log('running xing.com');
-//         break;
-//       case 'linkedin.com':
-//         res.status(200).json({ message: 'Parser started succesfully' });
-//         console.log('running linkedin.com');
-//         break;
-//     }
-//   } catch (err) {
-//     next(err);
-//   }
-// }
+    switch (parser.name) {
+      case 'jobbank.gc.ca':
+        res.status(200).json({ message: 'Parser started succesfully' });
+        try {
+          await runCaJobankParser(user, city, position);
+        } catch (err) {
+          stopFlags.set(id, true);
+        }
+        console.log('running jobbank.gc.ca');
+        break;
+      case 'xing.com':
+        res.status(200).json({ message: 'Parser started succesfully' });
+        console.log('running xing.com');
+        break;
+      case 'linkedin.com':
+        res.status(200).json({ message: 'Parser started succesfully' });
+        console.log('running linkedin.com');
+        break;
+    }
+  } catch (err) {
+    next(err);
+  }
+}
 
-// export async function stopParser(req: Request, res: Response, next: NextFunction) {
-//   try {
-//     const id = req.userId;
+export async function stopParser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.userId;
 
-//     if (!id) {
-//       throw HttpError(401, 'Unauthorized');
-//     }
+    if (!id) {
+      throw HttpError(401, 'Unauthorized');
+    }
 
-//     stopFlags.set(id, true);
+    stopFlags.set(id, true);
 
-//     res.status(200).json({ message: 'Parser stop requested.' });
-//   } catch (err) {
-//     next(err);
-//   }
-// }
+    res.status(200).json({ message: 'Parser stop requested.' });
+  } catch (err) {
+    next(err);
+  }
+}

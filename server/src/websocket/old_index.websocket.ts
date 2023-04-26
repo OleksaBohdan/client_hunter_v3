@@ -56,7 +56,7 @@ export function setupWebSocketHandlers() {
             try {
               socket.send(JSON.stringify(socketMessage('START', 'regular')));
 
-              // await runCaJobankParser(user, city, position, socket);
+              await runCaJobankParser(user, city, position, socket);
             } catch (err) {
               stopFlags.set(id, true);
             }

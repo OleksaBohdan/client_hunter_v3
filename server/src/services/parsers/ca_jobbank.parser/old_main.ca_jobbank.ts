@@ -9,8 +9,6 @@ import { stopFlags } from '../../../websocket/index.websocket.js';
 import WebSocket from 'ws';
 import { socketMessage } from '../../../websocket/index.websocket.js';
 
-import { clients } from '../../../websocket/websocket.js';
-
 // Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
 const outOfCanadaModal: any = 'a[onclick*="outOfCanadaCloseBtn"][id="j_id_5i:outOfCanadaCloseBtn"][title="Cancel"]';
@@ -39,11 +37,9 @@ interface IFoundEmails {
 
 let foundEmails: IFoundEmails;
 
-export async function runCaJobankParser(user: IUser, city: string, position: string) {
+export async function runCaJobankParser(user: IUser, city: string, position: string, socket: WebSocket) {
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
-
-  const socket = clients[user._id.toString()];
 
   stopFlags.set(user._id.toString(), false);
 
