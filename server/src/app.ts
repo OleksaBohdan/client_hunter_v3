@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { HttpError } from 'http-errors';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { createServer } from 'http';
 import * as WebSocket from 'ws';
-import { HttpError } from 'http-errors';
 import { setupWebSocketHandlers } from './websocket/index.websocket.js';
 
 import { authRoute } from './routes/auth.route.js';

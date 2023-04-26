@@ -7,7 +7,7 @@ const LoginPage = () => {
   return (
     <>
       <Helmet>
-        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="description" content="Welcome to Clienthunter!" />
         <title>Clienthunter-3</title>
       </Helmet>
       <Box sx={{ height: '100vh' }}>

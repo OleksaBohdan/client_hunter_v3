@@ -19,7 +19,6 @@ export async function readCity(id: string) {
 export async function deleteCity(userId: string, id: string) {
   await City.findByIdAndDelete(id);
   const user = await User.findById(userId);
-
   if (user?.activeCity == id) {
     user.activeCity = undefined;
     await user.save();

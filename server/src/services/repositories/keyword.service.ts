@@ -19,7 +19,6 @@ export async function readKeyword(id: string) {
 export async function deleteKeyword(userId: string, id: string) {
   await Keyword.findByIdAndDelete(id);
   const user = await User.findById(userId);
-
   if (user?.activeKeyword == id) {
     user.activeKeyword = undefined;
     await user.save();

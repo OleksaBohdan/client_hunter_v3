@@ -2,7 +2,7 @@ import { Parser } from '../../databases/mongo/models/Parser.js';
 import { User } from '../../databases/mongo/models/User.js';
 
 export async function createParser(name: string) {
-  await Parser.create({ name: name });
+  return await Parser.create({ name: name });
 }
 
 export async function readParsers() {
@@ -14,9 +14,5 @@ export async function readParser(id: string) {
 }
 
 export async function chooseParser(userId: string, parserId: string) {
-  try {
-    await User.findByIdAndUpdate(userId, { parser: parserId });
-  } catch (err) {
-    throw err;
-  }
+  return await User.findByIdAndUpdate(userId, { parser: parserId });
 }

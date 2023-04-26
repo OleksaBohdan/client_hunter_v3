@@ -1,6 +1,5 @@
 import { Company, ICompany, Status } from '../../databases/mongo/models/Company.js';
-import { User, IUser } from '../../databases/mongo/models/User.js';
-import { Email, IEmail } from '../../databases/mongo/models/Email.js';
+import { IUser } from '../../databases/mongo/models/User.js';
 
 export async function createCompany(c: ICompany, u: IUser): Promise<ICompany> {
   const company = new Company(c);
@@ -50,7 +49,6 @@ export async function readCompaniesByStatus(u: IUser, status: string) {
 
 export async function updateCompanyStatus(status: Status, companyNames: string[]): Promise<void> {
   const companiesToUpdate = await Company.find({ name: { $in: companyNames } });
-
   await Promise.all(
     companiesToUpdate.map(async (company) => {
       company.status = status;
@@ -60,11 +58,5 @@ export async function updateCompanyStatus(status: Status, companyNames: string[]
 }
 
 export async function deleteCompanies(companyNames: string[]): Promise<void> {
-  try {
-    const deleteResult = await Company.deleteMany({ name: { $in: companyNames } });
-
-    console.log(`Deleted ${deleteResult.deletedCount} companies`);
-  } catch (error) {
-    console.error(error);
-  }
+  await Company.deleteMany({ name: { $in: companyNames } });
 }
