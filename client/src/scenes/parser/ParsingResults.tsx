@@ -13,7 +13,6 @@ import {
   Grid,
 } from '@mui/material';
 import { styled } from '@mui/system';
-
 import { IMainState } from '../../state';
 
 export const ParsingResults = () => {

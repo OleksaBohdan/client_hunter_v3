@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, TextField, Button, Alert, useTheme, ButtonGroup, LinearProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-
 import { IMainState, setBlackIndustrues } from '../../state';
 import { BlackIndustry } from '../../types/BlackIndustry';
 
@@ -113,8 +112,8 @@ export const AddBlackIndustry = () => {
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2, mt: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
-      <Typography variant="h5">Add unwanted industry</Typography>
-      <Typography>NOTE: Companies with unwanted industry will be added to Black List</Typography>
+      <Typography variant="h5">Add blocked industry</Typography>
+      <Typography>Warning: New founded companies with blocked industry will be added to black list</Typography>
       {errorAlert && (
         <Alert severity="error" sx={{ marginTop: 1 }}>
           Something went wrong. Please try again later.
