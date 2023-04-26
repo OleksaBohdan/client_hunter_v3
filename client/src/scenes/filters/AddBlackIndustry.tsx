@@ -104,7 +104,7 @@ export const AddBlackIndustry = () => {
             '&:hover': { backgroundColor: '#d32f2f' },
           }}
         >
-          <DeleteIcon sx={{ color: 'grey' }} />
+          <DeleteIcon sx={{ color: '#bdbdbd' }} />
         </Button>
       </ButtonGroup>
     );
