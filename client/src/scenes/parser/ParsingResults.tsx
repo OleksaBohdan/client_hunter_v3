@@ -31,6 +31,7 @@ export const ParsingResults = () => {
   };
 
   const fetchCompaniesCount = async () => {
+    setErrorAlert(false);
     try {
       setIsLoading(true);
       const response = await fetch('http://localhost:3001/api/v1/companies', {
@@ -49,6 +50,7 @@ export const ParsingResults = () => {
   };
 
   const handleDownload = async (status: string) => {
+    setErrorAlert(false);
     try {
       setIsLoading(true);
       const response = await fetch(`http://localhost:3001/api/v1/companies/${status}`, {

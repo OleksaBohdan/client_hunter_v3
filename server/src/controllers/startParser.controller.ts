@@ -4,7 +4,7 @@ import { User } from '../databases/mongo/models/User.js';
 import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
 
-import { stopFlags } from '../websocket/index.websocket.js';
+export const stopFlags = new Map();
 
 export async function startParser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -23,7 +23,7 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
     const parser = await Parser.findById(user.parser);
 
     if (!parser) {
-      throw HttpError(404, 'Parser not chosen');
+      throw HttpError(404, 'Choose website to parse');
     }
 
     if (stopFlags.get(id) == false) {
@@ -32,7 +32,16 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
     }
 
     const position = user.activeKeyword ? user.activeKeyword.keyword : '';
+    if (position == '') {
+      res.status(403).json({ message: 'Choose Keyword to parse' });
+      return;
+    }
+
     const city = user.activeCity ? user.activeCity.city : '';
+    if (city == '') {
+      res.status(403).json({ message: 'Choose city to parse' });
+      return;
+    }
 
     switch (parser.name) {
       case 'jobbank.gc.ca':

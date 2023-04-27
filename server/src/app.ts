@@ -6,7 +6,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { createServer } from 'http';
 import * as WebSocket from 'ws';
-import { setupWebSocketHandlers } from './websocket/index.websocket.js';
 import { webSocketHandlers } from './websocket/websocket.js';
 
 import { authRoute } from './routes/auth.route.js';
@@ -48,7 +47,6 @@ app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   return;
 });
 
-// setupWebSocketHandlers();
 webSocketHandlers();
 
 export { server, wss };

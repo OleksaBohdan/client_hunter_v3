@@ -1,14 +1,13 @@
 import puppeteer from 'puppeteer';
 import { isEmail, validateCanadaPhone } from '../pkg/validators.js';
 import { removeExistingVacancyLinks } from '../pkg/filters.js';
-import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
+import { ICompany, Company, Status } from '../../../databases/mongo/models/Company.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
 import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
 import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
-import { stopFlags } from '../../../websocket/index.websocket.js';
+import { stopFlags } from '../../../controllers/startParser.controller.js';
 import WebSocket from 'ws';
-import { socketMessage } from '../../../websocket/index.websocket.js';
-
+import { socketMessage } from '../../../websocket/websocket.js';
 import { clients } from '../../../websocket/websocket.js';
 
 // Home page
@@ -77,6 +76,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     await page.goto(homePage);
   } catch (err) {
     socket.send(JSON.stringify(socketMessage(`Parser terminated unexpectedly. Please, try again`, 'error')));
+    stopFlags.delete(user._id.toString());
     await browser.close();
   }
 
@@ -89,9 +89,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
       await closeModalButton.click();
     }
-  } catch (err) {
-    // console.log(err);
-  }
+  } catch (err) {}
 
   // enter value - vacancy position
   try {
@@ -100,9 +98,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     if (inputPositionElement) {
       await inputPositionElement.type(position);
     }
-  } catch (err) {
-    // console.log(err);
-  }
+  } catch (err) {}
 
   // enter value - city
   try {
@@ -111,9 +107,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     if (inputCityElement) {
       await inputCityElement.type(city);
     }
-  } catch (err) {
-    // console.log(err);
-  }
+  } catch (err) {}
 
   // click to search
   try {
@@ -139,9 +133,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       await browser.close();
       return;
     }
-  } catch (err) {
-    // console.log(err);
-  }
+  } catch (err) {}
 
   // open list with vacancy links
   async function showAllVanacyLinks() {
@@ -153,7 +145,6 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
           moreResultsButton.click();
         }
       } catch (err) {
-        // console.log(err);
         break;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -170,9 +161,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       const prefixedHrefs = filteredHrefs.map((href) => `https://www.jobbank.gc.ca${href}`);
       VACANCY_LINKS = prefixedHrefs;
     }
-  } catch (err) {
-    // console.log(err);
-  }
+  } catch (err) {}
 
   await page.close();
 
@@ -241,9 +230,7 @@ async function parseVacancyPage(
       if (buttonElement) {
         await buttonElement.click();
       }
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get email
     try {
@@ -255,14 +242,13 @@ async function parseVacancyPage(
           socket.send(JSON.stringify(socketMessage(`Email from ${link} already exists in company list.`, 'warning')));
           return;
         }
-
         socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
         newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
+      } else {
+        newCompany.status = Status.GREY;
       }
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get phone
     try {
@@ -270,9 +256,7 @@ async function parseVacancyPage(
       if (validateCanadaPhone(phone) != '') {
         newCompany.phone = validateCanadaPhone(phone);
       }
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get reference number
     try {
@@ -280,59 +264,45 @@ async function parseVacancyPage(
         el.previousSibling ? el.previousSibling.textContent?.trim() : null,
       );
       newCompany.additionalInfo = additionalInfo;
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get company name
     try {
       const companyName = await page.$eval(companyNameSelector, (element) => element.textContent);
+      if (!companyName) {
+        return;
+      }
       newCompany.name = companyName;
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get company website
     try {
       const website = await page.$eval(vacancyWebsiteSelector, (anchor) => anchor.href);
-
       newCompany.website = website;
       const companyName = await page.$eval(vacancyWebsiteSelector, (anchor) => anchor.textContent);
-
       if (companyName) {
         newCompany.name = companyName;
       }
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get postCreated
     try {
       const datePosted = await page.$eval(postCreatedSelector, (element) => element.textContent);
       if (datePosted) {
         const date = new Date(datePosted);
-        // const formattedDate = date.toISOString().split('T')[0];
         newCompany.vacancyDate = date;
       }
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     // get Vacancy Job title
     try {
       const jobTitle = await page.$eval(vacancyTitleSelector, (element) => element.textContent);
       const title = jobTitle?.trim();
       newCompany.vacancyTitle = title;
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
 
     try {
       await createCompany(newCompany, user);
-    } catch (err) {
-      // console.log(err);
-    }
-  } catch (err) {
-    // console.log(err);
-  }
+    } catch (err) {}
+  } catch (err) {}
 }

@@ -1,6 +1,7 @@
 import { User, IUser } from '../../databases/mongo/models/User.js';
 import bcrypt from 'bcrypt';
 import { mapUserWithoutPassword } from '../../pkg/mappers/user.mapper.js';
+import { Model } from 'mongoose';
 
 export async function createUser(u: IUser): Promise<IUser> {
   const user = new User(u);
@@ -27,6 +28,10 @@ export async function updateUser(id: string, password: string, newEmail: string)
 }
 
 export async function deleteUser(id: string) {
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findById(id);
+  if (user) {
+    await Model.deleteMany({ user: user._id });
+  }
+  await User.findByIdAndDelete(id);
   return user;
 }

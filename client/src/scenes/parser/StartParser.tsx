@@ -1,25 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Box, Typography, Button, Alert, useTheme } from '@mui/material';
 import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgress';
 import { IMainState } from '../../state';
 import { useWebSocket } from '../../websocket/WebSocketContext';
 
 export const StartParser = () => {
-  const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
-  const user = useSelector((state: IMainState) => state.user);
   const { palette } = useTheme();
   const [errorAlert, setErrorAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
   const { socket } = useWebSocket();
 
   useEffect(() => {
     if (socket) {
-      socket.addEventListener('message', (event) => {
+      const handleMessage = (event: MessageEvent) => {
         const msgObj = JSON.parse(event.data);
         const { message, type } = msgObj;
 
@@ -29,21 +26,53 @@ export const StartParser = () => {
         }
 
         addNotification(message.replace('NaN', '0'), type);
-      });
+      };
+
+      socket.addEventListener('message', handleMessage);
+
+      // Clean up the event listener when the component is unmounted or the socket instance changes
+      return () => {
+        socket.removeEventListener('message', handleMessage);
+      };
     }
   }, [socket]);
 
-  const onStart = () => {
-    if (socket) {
-      setProgress(0);
-      socket.send(JSON.stringify({ id: user?._id, command: 'START' }));
+  const onHttpStart = async () => {
+    setErrorAlert(false);
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:3001/api/v1/start', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status !== 200) {
+        const { message } = await response.json();
+        addNotification(message, 'error');
+      }
+    } catch (error) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const onStop = () => {
-    if (socket) {
-      setProgress(0);
-      socket.send(JSON.stringify({ id: user?._id, command: 'STOP' }));
+  const onHttpStop = async () => {
+    setErrorAlert(false);
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:3001/api/v1/stop', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(response.status);
+    } catch (error) {
+      setErrorAlert(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,7 +112,7 @@ export const StartParser = () => {
           variant="contained"
           size="large"
           sx={{ mr: 2, backgroundColor: palette.primary.light, '&:hover': { backgroundColor: palette.primary.light } }}
-          onClick={onStart}
+          onClick={onHttpStart}
         >
           START
         </Button>
@@ -94,7 +123,7 @@ export const StartParser = () => {
           sx={{
             '&:hover': { backgroundColor: palette.primary.main },
           }}
-          onClick={onStop}
+          onClick={onHttpStop}
         >
           STOP
         </Button>

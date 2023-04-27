@@ -5,6 +5,7 @@ import {
   updateUser as changeUser,
   deleteUser as removeUser,
 } from '../services/repositories/user.service.js';
+import { Model } from 'mongoose';
 
 export async function readUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -53,6 +54,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     if (!id) {
       throw HttpError(401, 'Unauthorized');
     }
+
     await removeUser(id);
 
     res.status(204).json({ message: 'User deleted succesfully' });
