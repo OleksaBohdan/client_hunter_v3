@@ -5,6 +5,8 @@ export function mapUserWithoutPassword(user: IUser) {
     _id: user.id,
     email: user.email,
     parser: user.parser,
+    keyword: user.activeKeyword,
+    city: user.activeCity,
   };
   return mappedUser;
 }
