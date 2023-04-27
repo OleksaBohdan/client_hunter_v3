@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 const CitySchema = new Schema({
-    city: { type: String, unique: true, required: true },
-    isActive: { type: Boolean, default: false },
+    city: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, {
     timestamps: true,

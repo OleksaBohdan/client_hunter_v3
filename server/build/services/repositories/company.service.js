@@ -25,7 +25,28 @@ export async function readCompaniesEmails(u) {
     const companies = await Company.find({ user: u });
     const emails = companies.map((company) => company.email);
     const filteredEmails = emails.filter((email) => email !== '' && email !== undefined);
-    console.log(filteredEmails);
     return filteredEmails;
+}
+export async function readAllCompanies(u) {
+    const companies = await Company.find({ user: u });
+    return companies;
+}
+export async function readCompaniesByStatus(u, status) {
+    if (status === 'all') {
+        const companies = await Company.find({ user: u._id });
+        return companies;
+    }
+    const companies = await Company.find({ user: u._id, status: status });
+    return companies;
+}
+export async function updateCompanyStatus(status, companyNames) {
+    const companiesToUpdate = await Company.find({ name: { $in: companyNames } });
+    await Promise.all(companiesToUpdate.map(async (company) => {
+        company.status = status;
+        await company.save();
+    }));
+}
+export async function deleteCompanies(companyNames) {
+    await Company.deleteMany({ name: { $in: companyNames } });
 }
 //# sourceMappingURL=company.service.js.map

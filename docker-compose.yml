@@ -13,17 +13,12 @@ services:
       - mongo
     environment:
       MONGODB_URL: 'mongodb://clienthunter:12345678@mongo:27017/'
-    volumes:
-      - logs:/app/logs
-      - ./backend:/app
-      - /app/node_modules
+      PORT: 3001
 
   client:
     build: ./client
     ports:
       - 3000:3000
-    volumes:
-      - ./client/src:/app/src
     stdin_open: true
     tty: true
     depends_on:
@@ -64,4 +59,3 @@ networks:
 
 volumes:
   data:
-  logs:

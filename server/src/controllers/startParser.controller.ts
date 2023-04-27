@@ -3,6 +3,7 @@ import HttpError from 'http-errors';
 import { User } from '../databases/mongo/models/User.js';
 import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
+import { runXingParser } from '../services/parsers/de_xing.parser/main.de_xing.js';
 
 export const stopFlags = new Map();
 
@@ -54,7 +55,11 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
         break;
       case 'xing.com':
         res.status(200).json({ message: 'Parser started succesfully' });
-        console.log('running xing.com');
+        try {
+          await runXingParser(user, city, position);
+        } catch (err) {
+          stopFlags.set(id, true);
+        }
         break;
       case 'linkedin.com':
         res.status(200).json({ message: 'Parser started succesfully' });

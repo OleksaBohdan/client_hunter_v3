@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 const KeywordSchema = new Schema({
-    keyword: { type: String, unique: true, required: true },
-    isActive: { type: Boolean, default: false },
+    keyword: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, {
     timestamps: true,

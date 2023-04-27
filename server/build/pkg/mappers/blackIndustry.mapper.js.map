@@ -1,0 +1,1 @@
+{"version":3,"file":"blackIndustry.mapper.js","sourceRoot":"","sources":["../../../src/pkg/mappers/blackIndustry.mapper.ts"],"names":[],"mappings":"AAEA,MAAM,UAAU,gBAAgB,CAAC,aAA6B;IAC5D,MAAM,mBAAmB,GAAG;QAC1B,GAAG,EAAE,aAAa,CAAC,EAAE;QACrB,IAAI,EAAE,aAAa,CAAC,IAAI;KACzB,CAAC;IACF,OAAO,mBAAmB,CAAC;AAC7B,CAAC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"checkEmail.js","sourceRoot":"","sources":["../../src/pkg/checkEmail.ts"],"names":[],"mappings":"AAAA,MAAM,UAAU,UAAU,CAAC,GAAW;IACpC,MAAM,KAAK,GAAG,4BAA4B,CAAC;IAC3C,IAAI,KAAK,CAAC,IAAI,CAAC,GAAG,CAAC,EAAE;QACnB,OAAO,GAAG,CAAC;KACZ;SAAM;QACL,OAAO,EAAE,CAAC;KACX;AACH,CAAC"}

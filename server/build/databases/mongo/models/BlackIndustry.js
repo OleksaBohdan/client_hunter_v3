@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 const BlackIndustrySchema = new Schema({
-    name: { type: String, unique: true, required: true },
-    number: { type: Number },
+    name: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, {
     timestamps: true,
