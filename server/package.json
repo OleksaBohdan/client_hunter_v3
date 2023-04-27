@@ -24,6 +24,7 @@
   "author": "Leks",
   "license": "ISC",
   "dependencies": {
+    "@types/express-serve-static-core": "^4.17.34",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",

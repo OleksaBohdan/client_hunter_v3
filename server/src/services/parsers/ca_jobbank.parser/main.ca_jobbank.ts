@@ -49,7 +49,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -247,7 +247,7 @@ async function parseVacancyPage(
         newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
       } else {
-        newCompany.status = Status.GREY;
+        // newCompany.status = Status.GREY;
       }
     } catch (err) {}
 
@@ -273,7 +273,7 @@ async function parseVacancyPage(
       if (!companyName) {
         return;
       }
-      newCompany.name = companyName;
+      newCompany.name = companyName.trim();
     } catch (err) {}
 
     // get company website

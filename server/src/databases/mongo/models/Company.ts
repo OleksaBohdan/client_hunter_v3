@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { NextFunction } from 'express-serve-static-core';
 import { IUser } from './User.js';
 import { IEmail } from './Email.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -64,5 +65,21 @@ const CompanySchema: Schema<ICompany> = new Schema<ICompany>(
 
 CompanySchema.index({ email: 1, user: 1 }, { unique: true });
 CompanySchema.index({ name: 1, user: 1 }, { unique: true });
+
+CompanySchema.pre<ICompany>('save', function (next) {
+  // Check if the document is new
+  if (this.isNew) {
+    // Check if the email field is a UUID
+    const emailIsUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      this.email,
+    );
+
+    // If the email field is a UUID, set the status to GREY
+    if (emailIsUuid) {
+      this.status = Status.GREY;
+    }
+  }
+  next();
+});
 
 export const Company = mongoose.model<ICompany>('Company', CompanySchema);
