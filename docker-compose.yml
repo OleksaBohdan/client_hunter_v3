@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  clienthunter-server:
+    build: ./server
+    restart: always
+    container_name: clienthunter
+    ports:
+      - 3001:3001
+    networks:
+      - clienthunter-app
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URL: 'mongodb://clienthunter:12345678@mongo:27017/'
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+
+  client:
+    build: ./client
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client/src:/app/src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - clienthunter-server
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    networks:
+      - clienthunter-app
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: clienthunter
+      MONGO_INITDB_ROOT_PASSWORD: 12345678
+      MONGO_INITDB_DATABASE: developers
+    volumes:
+      - data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    networks:
+      - clienthunter-app
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: clienthunter
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 12345678
+      ME_CONFIG_BASICAUTH_USERNAME: clienthunter
+      ME_CONFIG_BASICAUTH_PASSWORD: 12345678
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_MONGODB_URL: mongodb://clienthunter:12345678@mongo:27017/
+
+networks:
+  clienthunter-app:
+    driver: bridge
+
+volumes:
+  data:
+  logs:

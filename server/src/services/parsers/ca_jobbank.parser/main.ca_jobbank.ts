@@ -49,7 +49,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     defaultViewport: {
       width: 1200,
       height: 900,
