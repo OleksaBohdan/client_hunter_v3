@@ -243,6 +243,7 @@ async function parseVacancyPage(
           return;
         }
         socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
+
         newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
       } else {
