@@ -18,14 +18,14 @@ const vacancyLinkSelector: any = '';
 
 export async function runXingParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
-  // let VACANCY_LINKS: string[] = [];
+  const VACANCY_LINKS: string[] = [];
   const socket = clients[user._id.toString()];
   stopFlags.set(user._id.toString(), false);
 
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -49,8 +49,20 @@ export async function runXingParser(user: IUser, city: string, position: string)
   const page = await browser.newPage();
 
   try {
-    for (let i = 1; i > 0; i++) {
-      await page.goto(vacanciesPage(position, city, i));
+    for (let i = 1; true; i++) {
+      try {
+        await page.goto(vacanciesPage(position, city, i));
+        await page.waitForSelector('a.list-item-job-teaser-list-item-listItem-f04c772e');
+        const hrefs = await page.$$eval('a.list-item-job-teaser-list-item-listItem-f04c772e', (links) => {
+          return links.map((link) => (link as HTMLAnchorElement).href);
+        });
+
+        VACANCY_LINKS.push(...hrefs);
+        console.log(hrefs);
+      } catch (err) {
+        await browser.close();
+        console.log('VACANCY_LINKS', VACANCY_LINKS);
+      }
     }
   } catch (err) {}
 
