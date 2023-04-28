@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Form from './Form';
 import logo from '../../assets/logo_full.png';
 import { Helmet } from 'react-helmet';
@@ -18,6 +18,19 @@ const LoginPage = () => {
           }}
         >
           <img src={`${logo}?mw=164`} alt="logo" style={{ maxWidth: '250px' }} />
+
+          <Typography
+            sx={{
+              fontSize: 24,
+              mt: 6,
+              fontWeight: 'bold',
+              color: '#1c1e21',
+              letterSpacing: 1,
+              lineHeight: 1.5,
+            }}
+          >
+            The easy tool to find new potential clients
+          </Typography>
         </Box>
 
         <Box

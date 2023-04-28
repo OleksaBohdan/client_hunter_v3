@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import { isEmail, validateCanadaPhone } from '../pkg/validators.js';
 import { removeExistingVacancyLinks } from '../pkg/filters.js';
-import { ICompany, Company, Status } from '../../../databases/mongo/models/Company.js';
+import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
 import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
 import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
@@ -195,7 +195,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   // socket.send(JSON.stringify(socketMessage(`Emails found: `, 'regular')));
   socket.send(
     JSON.stringify(
-      socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'regular'),
+      socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'success'),
     ),
   );
   socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
@@ -214,7 +214,6 @@ async function parseVacancyPage(
   socket: WebSocket,
 ) {
   const newCompany: ICompany = new Company();
-
   newCompany.vacancyLink = link;
   newCompany.positionKeyword = positionKeyword;
   newCompany.placeKeyword = placeKeyword;
@@ -304,6 +303,8 @@ async function parseVacancyPage(
 
     try {
       await createCompany(newCompany, user);
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   } catch (err) {}
 }
