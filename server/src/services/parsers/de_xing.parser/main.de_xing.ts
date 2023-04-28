@@ -62,6 +62,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
   const page = await browser.newPage();
 
   // fetch vacancy links
+  socket.send(JSON.stringify(socketMessage('Calculating vacancies...', 'regular')));
   for (let i = 1; true; i++) {
     try {
       await page.goto(vacanciesPage(position, city, i));
@@ -78,7 +79,10 @@ export async function runXingParser(user: IUser, city: string, position: string)
         socket.send(JSON.stringify(socketMessage(`Found ${VACANCY_LINKS.length} vacancies`, 'success')));
         break;
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+      break;
+    }
   }
 
   // Filter links from DB and recently founded
