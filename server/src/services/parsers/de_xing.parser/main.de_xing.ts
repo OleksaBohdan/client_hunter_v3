@@ -16,6 +16,18 @@ function vacanciesPage(position: string, city: string, page: number) {
 }
 const vacancyLinkSelector: any = 'a.list-item-job-teaser-list-item-listItem-f04c772e';
 const stopSelector: any = 'h2.sc-1gpssxl-0.bsVIlR.sc-100kd7l-1.eLOnrY[data-xds="Headline"]';
+const companyNameSelector: any = 'div[data-testid="header-company-info"] h2';
+const companyIndustrySelector: any = 'li[data-testid="info-icon"] svg[data-xds="IconIndustries"]';
+const vacancyTitleSelector: any = 'div.titlestyles__TitleContainer-bl83l1-3 h1[data-testid="job-title"]';
+const publishedDateSelector: any = 'p[data-testid="published-date"]';
+const companyLinkSelector: any = 'div[data-testid="header-company-info"] a[data-testid="company-logo-link"]';
+const employeesCountSelector: any =
+  'div.EntityInfo-EntityInfo-entityInfoBlockWrapper-d20bbe9a div.EntityInfo-EntityInfo-hideBorderOnLowRes-de1e9fc9 p[data-xds="BodyCopy"] span.EntityInfo-EntityInfo-entityInfoBlockValue-aaacef7d';
+const addressSelector: any =
+  'div.locations-Location-addressWrapper-e0891ff2[data-testid="locations-address-card"] p.locations-Location-address-aa54f5ed';
+const emailSelector: any = 'div.locations-Location-addressWrapper-e0891ff2 a[href^="mailto:"]';
+const websiteSelector: any = 'div.locations-Location-addressWrapper-e0891ff2 a[href^="mailto:"]';
+const phoneNumberSelector: any = 'a[href^="tel:"]';
 
 export async function runXingParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
@@ -124,7 +136,7 @@ async function parseVacancyPage(
 
     // get company name
     try {
-      const companyNameElement = await page.$('div[data-testid="header-company-info"] h2');
+      const companyNameElement = await page.$(companyNameSelector);
       if (companyNameElement) {
         const companyName = await page.evaluate((element) => element.textContent, companyNameElement);
         if (companyName) {
@@ -135,7 +147,7 @@ async function parseVacancyPage(
 
     // get company industry
     try {
-      const companyIndustryElement = await page.$('li[data-testid="info-icon"] svg[data-xds="IconIndustries"]');
+      const companyIndustryElement = await page.$(companyIndustrySelector);
       if (companyIndustryElement) {
         const industryTextElement = await companyIndustryElement.$x('..');
         if (industryTextElement.length > 0) {
@@ -149,7 +161,7 @@ async function parseVacancyPage(
 
     //get vacancy title
     try {
-      const vacancyTitleElement = await page.$('div.titlestyles__TitleContainer-bl83l1-3 h1[data-testid="job-title"]');
+      const vacancyTitleElement = await page.$(vacancyTitleSelector);
       if (vacancyTitleElement) {
         const vacancyTitle = await page.evaluate((element) => element.textContent, vacancyTitleElement);
         if (vacancyTitle) {
@@ -160,7 +172,7 @@ async function parseVacancyPage(
 
     // get vacancy posted date
     try {
-      const publishedDateElement = await page.$('p[data-testid="published-date"]');
+      const publishedDateElement = await page.$(publishedDateSelector);
       if (publishedDateElement) {
         const publishedDateText = await page.evaluate((element) => element.textContent, publishedDateElement);
         if (publishedDateText) {
@@ -179,9 +191,7 @@ async function parseVacancyPage(
     // get link with company data
     let companyDataLink: any;
     try {
-      const companyLinkElement = await page.$(
-        'div[data-testid="header-company-info"] a[data-testid="company-logo-link"]',
-      );
+      const companyLinkElement = await page.$(companyLinkSelector);
       if (companyLinkElement) {
         companyDataLink = await page.evaluate((element) => element.getAttribute('href'), companyLinkElement);
       }
@@ -200,10 +210,7 @@ async function parseVacancyPage(
 
     // get company size
     try {
-      const employeesCountElement = await page.$(
-        'div.EntityInfo-EntityInfo-entityInfoBlockWrapper-d20bbe9a div.EntityInfo-EntityInfo-hideBorderOnLowRes-de1e9fc9 p[data-xds="BodyCopy"] span.EntityInfo-EntityInfo-entityInfoBlockValue-aaacef7d',
-      );
-
+      const employeesCountElement = await page.$(employeesCountSelector);
       if (employeesCountElement) {
         const employeesRange = await page.evaluate((element) => element.textContent, employeesCountElement);
         if (employeesRange) {
@@ -216,9 +223,7 @@ async function parseVacancyPage(
 
     // get company address
     try {
-      const addressElement = await page.$(
-        'div.locations-Location-addressWrapper-e0891ff2[data-testid="locations-address-card"] p.locations-Location-address-aa54f5ed',
-      );
+      const addressElement = await page.$(addressSelector);
       if (addressElement) {
         const companyAddress = await page.evaluate((element) => element.textContent, addressElement);
         if (companyAddress) {
@@ -229,7 +234,7 @@ async function parseVacancyPage(
 
     // get company email
     try {
-      const emailElement = await page.$('div.locations-Location-addressWrapper-e0891ff2 a[href^="mailto:"]');
+      const emailElement = await page.$(emailSelector);
       if (emailElement) {
         const companyEmail = await page.evaluate((element) => element.textContent, emailElement);
         if (companyEmail) {
@@ -250,9 +255,7 @@ async function parseVacancyPage(
 
     // get company website
     try {
-      const websiteElement = await page.$(
-        'div.locations-Location-addressWrapper-e0891ff2 div.locations-Location-websiteLink-e29143d7 a[href^="http"]',
-      );
+      const websiteElement = await page.$(websiteSelector);
       if (websiteElement) {
         const companyWebsite = await page.evaluate((element) => element.textContent, websiteElement);
         if (companyWebsite) {
@@ -263,7 +266,7 @@ async function parseVacancyPage(
 
     // get phone
     try {
-      const phoneNumberElement = await page.$('a[href^="tel:"]');
+      const phoneNumberElement = await page.$(phoneNumberSelector);
       if (phoneNumberElement) {
         const phoneNumberText = await page.evaluate((element) => element.textContent, phoneNumberElement);
         if (phoneNumberText) {
@@ -279,8 +282,6 @@ async function parseVacancyPage(
     // create new company
     try {
       await createCompany(newCompany, user);
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   } catch (err) {}
 }
