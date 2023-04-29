@@ -10,7 +10,6 @@ import WebSocket from 'ws';
 import { socketMessage } from '../../../websocket/websocket.js';
 import { clients } from '../../../websocket/websocket.js';
 
-// Home page
 function vacanciesPage(position: string, city: string, page: number) {
   return `https://www.xing.com/jobs/search?country=de.02516e&keywords=${position}&location=${city}&page=${page}`;
 }
@@ -26,8 +25,26 @@ const employeesCountSelector: any =
 const addressSelector: any =
   'div.locations-Location-addressWrapper-e0891ff2[data-testid="locations-address-card"] p.locations-Location-address-aa54f5ed';
 const emailSelector: any = 'div.locations-Location-addressWrapper-e0891ff2 a[href^="mailto:"]';
-const websiteSelector: any = 'div.locations-Location-addressWrapper-e0891ff2 a[href^="mailto:"]';
+const websiteSelector: any =
+  'div.locations-Location-addressWrapper-e0891ff2 div.locations-Location-websiteLink-e29143d7 a[href^="http"]';
 const phoneNumberSelector: any = 'a[href^="tel:"]';
+
+// interface ISuccessFound {
+//   userId: string;
+//   count: number;
+// }
+
+// let successFound: ISuccessFound[];
+
+// function updateCountByUserId(userId: string, newCount: number): void {
+//   const user = successFound.find((u) => u.userId === userId);
+
+//   if (user) {
+//     user.count += newCount;
+//   } else {
+//     console.error(`User with userId ${userId} not found.`);
+//   }
+// }
 
 export async function runXingParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
@@ -38,7 +55,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -47,7 +64,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
 
   async function process() {
     if (stopFlags.get(user._id.toString())) {
-      socket.send(JSON.stringify(socketMessage('STOP', 'regular')));
+      socket.send(JSON.stringify(socketMessage('STOP', 'warning')));
       await browser.close();
       stopFlags.delete(user._id.toString());
       return;
@@ -116,6 +133,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
     ),
   );
   socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
+  // socket.send(JSON.stringify(socketMessage(`Found new unique companies: ${successFound}`, 'success')));
   stopFlags.delete(user._id.toString());
   await browser.close();
 }

@@ -10,7 +10,6 @@ import WebSocket from 'ws';
 import { socketMessage } from '../../../websocket/websocket.js';
 import { clients } from '../../../websocket/websocket.js';
 
-// Home page
 const homePage = 'https://www.jobbank.gc.ca/home';
 const outOfCanadaModal: any = 'a[onclick*="outOfCanadaCloseBtn"][id="j_id_5i:outOfCanadaCloseBtn"][title="Cancel"]';
 const inputPositionSelector: any =
@@ -21,7 +20,6 @@ const searchButtonSelector: any = 'button#searchButton.btn.btn-primary[type="sub
 const numberOfVacanciesSelector: any = 'button#searchButton.btn.btn-primary[type="submit"]';
 const moreResultsBtnSelector: any = 'button.btn.btn-default.btn-sm.btn-block#moreresultbutton[onclick="showmore();"]';
 const jobListElementSelector: any = '#ajaxupdateform\\:result_block article a';
-// Vacancy page
 const howToapplyBtnSelector: any = 'p > button#applynowbutton';
 const emailSelector: any = '#howtoapply p a';
 const phoneSelector: any = '#howtoapply p:nth-of-type(2)';
@@ -30,13 +28,6 @@ const companyNameSelector: any = 'p.date-business span.business span[property="n
 const postCreatedSelector: any = 'p.date-business span.date';
 const vacancyTitleSelector: any = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[property="name"] a.external';
-
-interface IFoundEmails {
-  userId: string;
-  count: number;
-}
-
-let foundEmails: IFoundEmails;
 
 export async function runCaJobankParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
@@ -129,7 +120,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
     if (numberOfVacancies === '0') {
       socket.send(JSON.stringify(socketMessage(`FINISH - VACANCIES NOT FOUND`, 'warning')));
-
+      stopFlags.delete(user._id.toString());
       await browser.close();
       return;
     }
