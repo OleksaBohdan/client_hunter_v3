@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { NextFunction } from 'express-serve-static-core';
 import { IUser } from './User.js';
 import { IEmail } from './Email.js';
 import { v4 as uuidv4 } from 'uuid';

@@ -34,9 +34,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   let VACANCY_LINKS: string[] = [];
 
   const socket = clients[user._id.toString()];
-
   stopFlags.set(user._id.toString(), false);
-
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
@@ -77,7 +75,6 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     const closeModalButton = await page.$(outOfCanadaModal);
     if (closeModalButton) {
       socket.send(JSON.stringify(socketMessage(`Closing bad modal...`, 'regular')));
-
       await closeModalButton.click();
     }
   } catch (err) {}
@@ -115,9 +112,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   try {
     await page.waitForSelector(numberOfVacanciesSelector);
     const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
-
     socket.send(JSON.stringify(socketMessage(`Found ${numberOfVacancies} vacancies`, 'success')));
-
     if (numberOfVacancies === '0') {
       socket.send(JSON.stringify(socketMessage(`FINISH - VACANCIES NOT FOUND`, 'warning')));
       stopFlags.delete(user._id.toString());
@@ -159,9 +154,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   // Filter links from DB and recently founded
   const existingLinks = await readCompaniesVacancyLink(user);
   VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
-
   const existingEmails = await readCompaniesEmails(user);
-
   socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
 
   // parsing vacancy pages
@@ -172,7 +165,6 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   for (let i = 0; i < VACANCY_LINKS.length; i += PARALLEL_PAGE) {
     socket.send(JSON.stringify(socketMessage(`${(i / VACANCY_LINKS.length) * 100}`, 'progress')));
-
     const promises = [];
     for (let j = 0; j < PARALLEL_PAGE && i + j < VACANCY_LINKS.length; j++) {
       promises.push(
@@ -233,11 +225,8 @@ async function parseVacancyPage(
           return;
         }
         socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
-
         newCompany.email = validEmail;
         newCompany.mailFrom = 'jobsite';
-      } else {
-        // newCompany.status = Status.GREY;
       }
     } catch (err) {}
 
@@ -294,8 +283,6 @@ async function parseVacancyPage(
 
     try {
       await createCompany(newCompany, user);
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   } catch (err) {}
 }
