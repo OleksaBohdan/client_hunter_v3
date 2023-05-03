@@ -23,7 +23,6 @@ const companyNameSelector = 'p.date-business span.business span[property="name"]
 const postCreatedSelector = 'p.date-business span.date';
 const vacancyTitleSelector = 'h1.title span[property="title"]';
 const vacancyWebsiteSelector = 'span[property="hiringOrganization"] span[property="name"] a.external';
-let foundEmails;
 export async function runCaJobankParser(user, city, position) {
     const PARALLEL_PAGE = 3;
     let VACANCY_LINKS = [];
@@ -99,6 +98,7 @@ export async function runCaJobankParser(user, city, position) {
         socket.send(JSON.stringify(socketMessage(`Found ${numberOfVacancies} vacancies`, 'success')));
         if (numberOfVacancies === '0') {
             socket.send(JSON.stringify(socketMessage(`FINISH - VACANCIES NOT FOUND`, 'warning')));
+            stopFlags.delete(user._id.toString());
             await browser.close();
             return;
         }
@@ -148,7 +148,7 @@ export async function runCaJobankParser(user, city, position) {
         await Promise.all(promises);
     }
     socket.send(JSON.stringify(socketMessage(`${100}`, 'progress')));
-    socket.send(JSON.stringify(socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'regular')));
+    socket.send(JSON.stringify(socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'success')));
     socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
     stopFlags.delete(user._id.toString());
     await browser.close();
@@ -181,8 +181,6 @@ async function parseVacancyPage(link, page, user, positionKeyword, placeKeyword,
                 socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
                 newCompany.email = validEmail;
                 newCompany.mailFrom = 'jobsite';
-            }
-            else {
             }
         }
         catch (err) { }

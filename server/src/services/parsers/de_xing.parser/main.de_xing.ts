@@ -29,23 +29,6 @@ const websiteSelector: any =
   'div.locations-Location-addressWrapper-e0891ff2 div.locations-Location-websiteLink-e29143d7 a[href^="http"]';
 const phoneNumberSelector: any = 'a[href^="tel:"]';
 
-// interface ISuccessFound {
-//   userId: string;
-//   count: number;
-// }
-
-// let successFound: ISuccessFound[];
-
-// function updateCountByUserId(userId: string, newCount: number): void {
-//   const user = successFound.find((u) => u.userId === userId);
-
-//   if (user) {
-//     user.count += newCount;
-//   } else {
-//     console.error(`User with userId ${userId} not found.`);
-//   }
-// }
-
 export async function runXingParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
