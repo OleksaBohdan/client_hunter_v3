@@ -43,6 +43,14 @@ export async function runXingParser(user: IUser, city: string, position: string)
       width: 1200,
       height: 900,
     },
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+      '--disable-infobars',
+    ],
   });
 
   async function process() {
