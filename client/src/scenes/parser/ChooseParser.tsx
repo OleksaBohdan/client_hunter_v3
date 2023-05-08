@@ -4,6 +4,8 @@ import { IMainState, setChoosenParser, setParsers } from '../../state';
 import { Box, Typography, Button, Alert, LinearProgress } from '@mui/material';
 import { Parsers } from '../../types/Parsers';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const ChooseWebsite = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
@@ -20,7 +22,7 @@ export const ChooseWebsite = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/parsers', {
+      const response = await fetch(`${serverUrl}/api/v1/parsers`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -47,7 +49,7 @@ export const ChooseWebsite = () => {
     dispatch(setChoosenParser({ parser: id }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/parser', {
+      const response = await fetch(`${serverUrl}/api/v1/parser`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ parserId: id }),

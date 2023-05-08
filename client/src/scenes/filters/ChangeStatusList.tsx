@@ -16,6 +16,8 @@ import {
 } from '@mui/material';
 import { IMainState } from '../../state';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const ChangeStatusList = () => {
   const token = useSelector((state: IMainState) => state.token);
   const [companyNames, setCompanyNames] = useState('');
@@ -48,7 +50,7 @@ export const ChangeStatusList = () => {
   const handleSubmitForm = async (companies: string[], status: string) => {
     setErrorAlert(false);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/status`, {
+      const response = await fetch(`${serverUrl}/api/v1/status`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, companies }),

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setLogin } from '../../state';
 
+import { serverUrl } from '../../api/clientApi';
+
 const registerSchema = yup.object().shape({
   email: yup.string().email('email is not valid').required('required'),
   password: yup.string().required('required').min(8),
@@ -36,7 +38,7 @@ const Form = () => {
   const isRegister = pageType === 'register';
 
   const register = async (values: any, onSubmitProps: any) => {
-    const savedUserResponse = await fetch('http://localhost:3001/api/v1/auth/register', {
+    const savedUserResponse = await fetch(`${serverUrl}/api/v1/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
@@ -58,7 +60,7 @@ const Form = () => {
   };
 
   const login = async (values: any, onSubmitProps: any) => {
-    const loggedInResponse = await fetch('http://localhost:3001/api/v1/auth/login', {
+    const loggedInResponse = await fetch(`${serverUrl}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),

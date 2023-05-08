@@ -15,6 +15,8 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Keyword } from '../../types/Keyword';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const ChooseKeyword = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
@@ -32,7 +34,7 @@ export const ChooseKeyword = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keywords', {
+      const response = await fetch(`${serverUrl}/api/v1/keywords`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -57,7 +59,7 @@ export const ChooseKeyword = () => {
     dispatch(setChoosenKeyword({ keyword: id }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch(`${serverUrl}/api/v1/keyword`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ keywordId: id }),
@@ -88,7 +90,7 @@ export const ChooseKeyword = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/v1/keyword', {
+      const response = await fetch(`${serverUrl}/api/v1/keyword`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword: keyword }),
@@ -108,7 +110,7 @@ export const ChooseKeyword = () => {
   const handleDeleteKeyword = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/keyword/${id}`, {
+      const response = await fetch(`${serverUrl}/api/v1/keyword/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });

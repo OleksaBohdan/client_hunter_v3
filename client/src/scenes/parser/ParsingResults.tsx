@@ -15,6 +15,8 @@ import {
 import { styled } from '@mui/system';
 import { IMainState } from '../../state';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const ParsingResults = () => {
   const token = useSelector((state: IMainState) => state.token);
   const { palette } = useTheme();
@@ -34,7 +36,7 @@ export const ParsingResults = () => {
     setErrorAlert(false);
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3001/api/v1/companies', {
+      const response = await fetch(`${serverUrl}/api/v1/companies`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +55,7 @@ export const ParsingResults = () => {
     setErrorAlert(false);
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3001/api/v1/companies/${status}`, {
+      const response = await fetch(`${serverUrl}/api/v1/companies/${status}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

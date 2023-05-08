@@ -5,6 +5,8 @@ import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgres
 import { IMainState } from '../../state';
 import { useWebSocket } from '../../websocket/WebSocketContext';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const StartParser = () => {
   const token = useSelector((state: IMainState) => state.token);
   const { palette } = useTheme();
@@ -41,7 +43,7 @@ export const StartParser = () => {
     setErrorAlert(false);
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3001/api/v1/start', {
+      const response = await fetch(`${serverUrl}/api/v1/start`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -62,7 +64,7 @@ export const StartParser = () => {
     setErrorAlert(false);
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3001/api/v1/stop', {
+      const response = await fetch(`${serverUrl}/api/v1/stop`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

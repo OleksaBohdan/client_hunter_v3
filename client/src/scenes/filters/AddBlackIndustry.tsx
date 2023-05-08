@@ -5,6 +5,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { IMainState, setBlackIndustrues } from '../../state';
 import { BlackIndustry } from '../../types/BlackIndustry';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const AddBlackIndustry = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
@@ -21,7 +23,7 @@ export const AddBlackIndustry = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/blackindustries', {
+      const response = await fetch(`${serverUrl}/api/v1/blackindustries`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -46,7 +48,7 @@ export const AddBlackIndustry = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/v1/blackindustry', {
+      const response = await fetch(`${serverUrl}/api/v1/blackindustry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ blackIndustry: blackIndustry }),
@@ -66,7 +68,7 @@ export const AddBlackIndustry = () => {
   const handleDeleteBlackindustry = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/blackindustry/${id}`, {
+      const response = await fetch(`${serverUrl}/api/v1/blackindustry/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });

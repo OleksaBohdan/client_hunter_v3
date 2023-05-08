@@ -5,6 +5,8 @@ import { Box, Typography, TextField, Button, Alert, useTheme, ButtonGroup, Linea
 import DeleteIcon from '@mui/icons-material/Delete';
 import { City } from '../../types/City';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const ChooseCity = () => {
   const dispatch = useDispatch();
   const token = useSelector((state: IMainState) => state.token);
@@ -22,7 +24,7 @@ export const ChooseCity = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/cities', {
+      const response = await fetch(`${serverUrl}/api/v1/cities`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -47,7 +49,7 @@ export const ChooseCity = () => {
     dispatch(setChoosenCity({ city: id }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/v1/city', {
+      const response = await fetch(`${serverUrl}/api/v1/city`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ cityId: id }),
@@ -78,7 +80,7 @@ export const ChooseCity = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/v1/city', {
+      const response = await fetch(`${serverUrl}/api/v1/city`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ city: city }),
@@ -98,7 +100,7 @@ export const ChooseCity = () => {
   const handleDeleteCity = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/city/${id}`, {
+      const response = await fetch(`${serverUrl}/api/v1/city/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });

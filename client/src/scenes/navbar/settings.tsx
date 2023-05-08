@@ -4,6 +4,8 @@ import { setLogout } from '../../state';
 import { Box, Button, Dialog, DialogTitle, Divider } from '@mui/material';
 import { User } from '../../types/User';
 
+import { serverUrl } from '../../api/clientApi';
+
 export interface SimpleDialogProps {
   open: boolean;
   onClose: () => void;
@@ -33,7 +35,7 @@ export function SettingsDialog(props: SimpleDialogProps) {
   };
 
   const deleteUser = async () => {
-    const deleteResponse = await fetch('http://localhost:3001/api/v1/user', {
+    const deleteResponse = await fetch(`${serverUrl}/api/v1/user`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

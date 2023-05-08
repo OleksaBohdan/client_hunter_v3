@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { Box, Typography, Button, Alert, useTheme, LinearProgress, TextField, FormControl } from '@mui/material';
 import { IMainState } from '../../state';
 
+import { serverUrl } from '../../api/clientApi';
+
 export const DeleteCompanies = () => {
   const token = useSelector((state: IMainState) => state.token);
   const [companyNames, setCompanyNames] = useState('');
@@ -33,7 +35,7 @@ export const DeleteCompanies = () => {
   const handleSubmitForm = async (companies: string[]) => {
     setErrorAlert(false);
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/companies`, {
+      const response = await fetch(`${serverUrl}/api/v1/companies`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ companies }),

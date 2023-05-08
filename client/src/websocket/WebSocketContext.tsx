@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, useRef, PropsWithChildr
 import { useDispatch, useSelector } from 'react-redux';
 import { IMainState } from '../state';
 
+import { serverWsUrl } from '../api/clientApi';
+
 type WebSocketContextType = {
   socket: WebSocket | null;
 };
@@ -37,7 +39,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   //   });
   // };
   const connect = () => {
-    const ws = new WebSocket('ws://localhost:3001');
+    const ws = new WebSocket(serverWsUrl);
 
     ws.addEventListener('open', (event) => {
       // Get the user's ID from your session management code
