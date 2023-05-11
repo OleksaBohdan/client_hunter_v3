@@ -71,19 +71,21 @@ export const ChooseWebsite = () => {
 
   const parsersBtns = parsers.map((value: Parsers) => {
     const isSelected = user && user.parser === value._id;
-
+    const isLinkedin = value.name === 'linkedin.com';
+  
     return (
       <Button
         key={value._id}
         variant={isSelected ? 'contained' : 'outlined'}
         sx={{ marginRight: 2, marginTop: 2 }}
         onClick={() => handleChooseParser(value._id)}
+        disabled={isLinkedin} // Disable the button if it's linkedin
       >
         {value.name}
       </Button>
     );
   });
-
+  
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>
