@@ -22,11 +22,10 @@ const app = express();
 const server = createServer(app);
 const wss = new WebSocket.WebSocketServer({ server });
 
+app.use(cors());
 app.use(express.json());
 app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 app.use(morgan('common'));
-app.use(cors());
 app.use(bodyParser.json({ limit: '30mb' }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
@@ -39,6 +38,10 @@ app.use('/api/v1/', startParserRoute);
 app.use('/api/v1/', companyRoute);
 app.use('/api/v1/', blackIndustryRoute);
 app.use('/api/v1/', statusRoute);
+
+app.use('/ping', (req, res) => {
+  res.send('pong').end();
+});
 
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;

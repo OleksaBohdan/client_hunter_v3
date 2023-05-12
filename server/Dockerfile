@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 node:19.9-bullseye-slim
+FROM  node:19.9-bullseye-slim
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
@@ -32,7 +32,8 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3001
+ENV PORT 8080
+EXPOSE 8080
 
 ENTRYPOINT ["dumb-init", "-c", "--"]
 
