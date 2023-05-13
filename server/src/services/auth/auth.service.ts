@@ -8,6 +8,7 @@ import { JWT_SECRET } from '../../configs/app.config.js';
 
 export async function registerUser(email: string, password: string) {
   try {
+    email = email.toLowerCase();
     const isUsed = await readUser(email);
     if (isUsed) {
       throw HttpError(409, 'Email already in use');
@@ -24,6 +25,7 @@ export async function registerUser(email: string, password: string) {
 
 export async function loginUser(email: string, password: string) {
   try {
+    email = email.toLowerCase();
     const user = await readUser(email);
 
     if (!user) {
