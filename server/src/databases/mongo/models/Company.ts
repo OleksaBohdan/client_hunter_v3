@@ -42,7 +42,7 @@ const CompanySchema: Schema<ICompany> = new Schema<ICompany>(
     positionKeyword: { type: String, default: '' },
     placeKeyword: { type: String, default: '' },
     mailFrom: { type: String },
-    email: { type: String, unique: true, default: () => uuidv4() },
+    email: { type: String, default: () => uuidv4() },
     phone: { type: String },
     name: { type: String },
     website: { type: String },
