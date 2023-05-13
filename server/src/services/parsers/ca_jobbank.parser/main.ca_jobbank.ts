@@ -33,7 +33,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
 
-  const socket = clients[user._id.toString()];
+  let socket = clients[user._id.toString()];
   stopFlags.set(user._id.toString(), false);
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
@@ -46,6 +46,8 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   });
 
   async function process() {
+    socket = clients[user._id.toString()];
+
     if (stopFlags.get(user._id.toString())) {
       socket.send(JSON.stringify(socketMessage('STOP', 'regular')));
       await browser.close();
@@ -77,7 +79,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       socket.send(JSON.stringify(socketMessage(`Closing bad modal...`, 'regular')));
       await closeModalButton.click();
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`closeModal: \n ${err}`, 'error')));
+  }
 
   // enter value - vacancy position
   try {
@@ -86,7 +90,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     if (inputPositionElement) {
       await inputPositionElement.type(position);
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`inputPositionSelector: \n ${err}`, 'error')));
+  }
 
   // enter value - city
   try {
@@ -95,7 +101,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     if (inputCityElement) {
       await inputCityElement.type(city);
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`inputCitySelector: \n ${err}`, 'error')));
+  }
 
   // click to search
   try {
@@ -106,7 +114,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     if (searchButton) {
       await searchButton.click();
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`searchButtonSelector: \n ${err}`, 'error')));
+  }
 
   // get results number
   try {
@@ -119,7 +129,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       await browser.close();
       return;
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`numberOfVacanciesSelector: \n ${err}`, 'error')));
+  }
 
   // open list with vacancy links
   async function showAllVanacyLinks() {
@@ -131,6 +143,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
           moreResultsButton.click();
         }
       } catch (err) {
+        socket.send(JSON.stringify(socketMessage(`moreResultsBtnSelector: \n ${err}`, 'error')));
         break;
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -147,7 +160,9 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
       const prefixedHrefs = filteredHrefs.map((href) => `https://www.jobbank.gc.ca${href}`);
       VACANCY_LINKS = prefixedHrefs;
     }
-  } catch (err) {}
+  } catch (err) {
+    socket.send(JSON.stringify(socketMessage(`jobListElementSelector: \n ${err}`, 'error')));
+  }
 
   await page.close();
 
