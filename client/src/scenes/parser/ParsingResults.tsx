@@ -26,7 +26,7 @@ export const ParsingResults = () => {
 
   useEffect(() => {
     fetchCompaniesCount();
-  }, []);
+  }, []); // eslint-disable-line
 
   const handleUpdateCompaniesCount = async () => {
     fetchCompaniesCount();

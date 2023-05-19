@@ -16,7 +16,7 @@ export const ChooseWebsite = () => {
 
   useEffect(() => {
     uploadParsers();
-  }, []);
+  }, []); // eslint-disable-line
 
   const uploadParsers = async () => {
     setIsLoading(true);
@@ -72,7 +72,7 @@ export const ChooseWebsite = () => {
   const parsersBtns = parsers.map((value: Parsers) => {
     const isSelected = user && user.parser === value._id;
     const isLinkedin = value.name === 'linkedin.com';
-  
+
     return (
       <Button
         key={value._id}
@@ -85,7 +85,7 @@ export const ChooseWebsite = () => {
       </Button>
     );
   });
-  
+
   return (
     <Box sx={{ backgroundColor: 'white', borderRadius: 2, p: 2 }}>
       <Box sx={{ minHeight: '1rem' }}>{isLoading && <LinearProgress />}</Box>

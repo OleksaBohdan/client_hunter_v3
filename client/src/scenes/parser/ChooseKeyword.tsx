@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IMainState, setKeywords, setChoosenKeyword } from '../../state';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Alert,
-  useTheme,
-  ButtonGroup,
-  LinearProgress,
-  styled,
-} from '@mui/material';
+import { Box, Typography, TextField, Button, Alert, useTheme, ButtonGroup, LinearProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Keyword } from '../../types/Keyword';
 
@@ -28,7 +18,7 @@ export const ChooseKeyword = () => {
 
   useEffect(() => {
     uploadKeywords();
-  }, []);
+  }, []); // eslint-disable-line
 
   const uploadKeywords = async () => {
     setIsLoading(true);

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, PropsWithChildren } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { IMainState } from '../state';
 
 import { serverWsUrl } from '../api/clientApi';
@@ -21,31 +21,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   const user = useSelector((state: IMainState) => state.user);
   const token = useSelector((state: IMainState) => state.token);
 
-  // const connect = () => {
-  //   const ws = new WebSocket('ws://localhost:3001');
-
-  //   ws.addEventListener('open', (event) => {
-  //     setSocket(ws);
-  //     reconnectAttempts.current = 0;
-  //   });
-
-  //   ws.addEventListener('close', (event) => {
-  //     setSocket(null);
-  //     setReconnect(true);
-  //   });
-
-  //   ws.addEventListener('error', (event) => {
-  //     ws.close();
-  //   });
-  // };
   const connect = () => {
     const ws = new WebSocket(serverWsUrl);
 
     ws.addEventListener('open', (event) => {
-      // Get the user's ID from your session management code
       const userId = user?._id;
 
-      // Send the user's ID to the server
       ws.send(JSON.stringify({ type: 'userId', data: userId }));
 
       setSocket(ws);
@@ -74,7 +55,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         return null;
       });
     };
-  }, [token]);
+  }, [token]); // eslint-disable-line
 
   useEffect(() => {
     if (reconnect) {
@@ -86,7 +67,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
       return () => clearTimeout(timeoutId);
     }
-  }, [reconnect]);
+  }, [reconnect]); // eslint-disable-line
 
   return <WebSocketContext.Provider value={{ socket }}>{children}</WebSocketContext.Provider>;
 };

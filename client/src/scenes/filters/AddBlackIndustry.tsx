@@ -17,7 +17,7 @@ export const AddBlackIndustry = () => {
 
   useEffect(() => {
     uploadBlackindustries();
-  }, []);
+  }, []); // eslint-disable-line
 
   const uploadBlackindustries = async () => {
     setIsLoading(true);

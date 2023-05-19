@@ -18,7 +18,7 @@ export const ChooseCity = () => {
 
   useEffect(() => {
     uploadCities();
-  }, []);
+  }, []); // eslint-disable-line
 
   const uploadCities = async () => {
     setIsLoading(true);

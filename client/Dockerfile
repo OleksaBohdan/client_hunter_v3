@@ -1,4 +1,3 @@
-# build environment
 FROM node:19-alpine as react-build
 WORKDIR /app
 COPY . ./
