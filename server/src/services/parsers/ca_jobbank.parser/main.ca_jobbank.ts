@@ -10,7 +10,7 @@ import WebSocket from 'ws';
 import { socketMessage } from '../../../websocket/websocket.js';
 import { clients } from '../../../websocket/websocket.js';
 
-const homePage = 'https://www.jobbank.gc.ca/home';
+const homePage = 'https://www.jobbank.gc.ca/';
 const outOfCanadaModal: any = 'a[onclick*="outOfCanadaCloseBtn"][id="j_id_5i:outOfCanadaCloseBtn"][title="Cancel"]';
 const inputPositionSelector: any =
   'input[aria-describedby="what"][name="searchstring"][id="searchString"][placeholder="Example: Cook"]';
@@ -18,7 +18,8 @@ const inputCitySelector: any =
   'input#locationstring[name="locationstring"].form-control.input-lg.tt-input[placeholder="Location"]';
 const searchButtonSelector: any = 'button#searchButton.btn.btn-primary[type="submit"]';
 const numberOfVacanciesSelector: any = 'button#searchButton.btn.btn-primary[type="submit"]';
-const moreResultsBtnSelector: any = 'button.btn.btn-default.btn-sm.btn-block#moreresultbutton[onclick="showmore();"]';
+// const moreResultsBtnSelector: any = 'button.btn.btn-default.btn-sm.btn-block#moreresultbutton[onclick="showmore();"]';
+const moreResultsBtnSelector: any = '#moreresultbutton';
 const jobListElementSelector: any = '#ajaxupdateform\\:result_block article a';
 const howToapplyBtnSelector: any = 'p > button#applynowbutton';
 const emailSelector: any = '#howtoapply p a';
@@ -32,24 +33,31 @@ const vacancyWebsiteSelector: any = 'span[property="hiringOrganization"] span[pr
 export async function runCaJobankParser(user: IUser, city: string, position: string) {
   const PARALLEL_PAGE = 3;
   let VACANCY_LINKS: string[] = [];
-
   let socket = clients[user._id.toString()];
   stopFlags.set(user._id.toString(), false);
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     defaultViewport: {
       width: 1200,
       height: 900,
     },
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+      '--disable-infobars',
+    ],
   });
 
   async function process() {
     socket = clients[user._id.toString()];
 
     if (stopFlags.get(user._id.toString())) {
-      socket.send(JSON.stringify(socketMessage('STOP', 'regular')));
+      socket.send(JSON.stringify(socketMessage('STOP', 'warning')));
       await browser.close();
       stopFlags.delete(user._id.toString());
       return;
@@ -62,6 +70,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   process();
 
   const page = await browser.newPage();
+
   try {
     socket.send(JSON.stringify(socketMessage(`Going to website: ${homePage}`, 'regular')));
     await page.goto(homePage);
@@ -73,7 +82,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   // close modal
   try {
-    await page.waitForSelector(outOfCanadaModal, { timeout: 7000 });
+    await page.waitForSelector(outOfCanadaModal, { timeout: 5000 });
     const closeModalButton = await page.$(outOfCanadaModal);
     if (closeModalButton) {
       socket.send(JSON.stringify(socketMessage(`Closing bad modal...`, 'regular')));
@@ -119,9 +128,10 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   }
 
   // get results number
+  let numberOfVacancies: any;
   try {
     await page.waitForSelector(numberOfVacanciesSelector);
-    const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
+    numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
     socket.send(JSON.stringify(socketMessage(`Found ${numberOfVacancies} vacancies`, 'success')));
     if (numberOfVacancies === '0') {
       socket.send(JSON.stringify(socketMessage(`FINISH - VACANCIES NOT FOUND`, 'warning')));
@@ -135,9 +145,12 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
 
   // open list with vacancy links
   async function showAllVanacyLinks() {
-    for (let i = 0; i >= 0; i++) {
+    console.log('open list with vacancy links');
+    for (let i = 0; i < Math.ceil(parseInt(numberOfVacancies, 10) / 25); i++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       try {
-        await page.waitForSelector(moreResultsBtnSelector, { timeout: 7000 });
+        await page.waitForSelector(moreResultsBtnSelector, { timeout: 5000 });
+
         const moreResultsButton = await page.$(moreResultsBtnSelector);
         if (moreResultsButton) {
           moreResultsButton.click();
@@ -146,15 +159,19 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
         socket.send(JSON.stringify(socketMessage(`moreResultsBtnSelector: \n ${err}`, 'error')));
         break;
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
   await showAllVanacyLinks();
 
   // fetch vacancy links
   try {
+    console.log('fetch vacancy links');
+    await page.waitForSelector(jobListElementSelector, { timeout: 7000 });
     const jobListingElements = await page.$$(jobListElementSelector);
     const hrefs = await Promise.all(jobListingElements.map((el) => el.evaluate((a) => a.getAttribute('href'))));
+    console.log(hrefs);
+    console.log(hrefs.length);
     if (hrefs != null) {
       const filteredHrefs = hrefs.filter((href) => href && !href.includes('/login'));
       const prefixedHrefs = filteredHrefs.map((href) => `https://www.jobbank.gc.ca${href}`);
@@ -164,13 +181,15 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
     socket.send(JSON.stringify(socketMessage(`jobListElementSelector: \n ${err}`, 'error')));
   }
 
-  await page.close();
+  // await page.close();
 
   // Filter links from DB and recently founded
   const existingLinks = await readCompaniesVacancyLink(user);
+  console.log('existingLinks', existingLinks.length);
   VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
+  console.log('VACANCY_LINKS', VACANCY_LINKS.length);
   const existingEmails = await readCompaniesEmails(user);
-  socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
+  // socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -190,7 +209,6 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   }
 
   socket.send(JSON.stringify(socketMessage(`${100}`, 'progress')));
-  // socket.send(JSON.stringify(socketMessage(`Emails found: `, 'regular')));
   socket.send(
     JSON.stringify(
       socketMessage(`Check the Whitelist for email results and the Greylist for email non-existence.`, 'success'),
@@ -199,7 +217,7 @@ export async function runCaJobankParser(user: IUser, city: string, position: str
   socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
   stopFlags.delete(user._id.toString());
 
-  await browser.close();
+  // await browser.close();
 }
 
 async function parseVacancyPage(
@@ -239,9 +257,7 @@ async function parseVacancyPage(
           socket.send(JSON.stringify(socketMessage(`Email from ${link} already exists in company list.`, 'warning')));
           return;
         }
-        socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
         newCompany.email = validEmail;
-        newCompany.mailFrom = 'jobsite';
       }
     } catch (err) {}
 
@@ -297,7 +313,11 @@ async function parseVacancyPage(
     } catch (err) {}
 
     try {
+      newCompany.mailFrom = 'jobsite';
       await createCompany(newCompany, user);
-    } catch (err) {}
+      socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
+    } catch (err) {
+      // console.log('createCompany \n', err);
+    }
   } catch (err) {}
 }

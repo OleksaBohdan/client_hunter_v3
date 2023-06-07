@@ -49,6 +49,7 @@ export async function startParser(req, res, next) {
                     await runXingParser(user, city, position);
                 }
                 catch (err) {
+                    console.log(err);
                     stopFlags.set(id, true);
                 }
                 break;

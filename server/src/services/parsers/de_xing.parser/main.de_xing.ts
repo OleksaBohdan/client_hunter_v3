@@ -100,7 +100,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
   console.log('existingLinks', existingLinks.length);
   VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
   const existingEmails = await readCompaniesEmails(user);
-  socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
+  // socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -196,7 +196,6 @@ async function parseVacancyPage(
             const daysAgo = parseInt(daysAgoMatch[0]);
             const realDatePosted = new Date();
             realDatePosted.setDate(realDatePosted.getDate() - daysAgo);
-            // console.log('Real date posted:', realDatePosted.toISOString().split('T')[0]);
             newCompany.vacancyDate = realDatePosted;
           }
         }
@@ -258,9 +257,7 @@ async function parseVacancyPage(
             if (emails.includes(validEmail)) {
               socket.send(JSON.stringify(socketMessage(`Email already exists from ${link}.`, 'warning')));
             } else {
-              // socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
               newCompany.email = validEmail;
-              newCompany.mailFrom = 'jobsite';
             }
           }
         }
@@ -295,6 +292,7 @@ async function parseVacancyPage(
 
     // create new company
     try {
+      newCompany.mailFrom = 'jobsite';
       await createCompany(newCompany, user);
       socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
     } catch (err) {

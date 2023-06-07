@@ -26,7 +26,7 @@ const vacancyWebsiteSelector = 'span[property="hiringOrganization"] span[propert
 export async function runCaJobankParser(user, city, position) {
     const PARALLEL_PAGE = 3;
     let VACANCY_LINKS = [];
-    const socket = clients[user._id.toString()];
+    let socket = clients[user._id.toString()];
     stopFlags.set(user._id.toString(), false);
     socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
     const browser = await puppeteer.launch({
@@ -37,6 +37,7 @@ export async function runCaJobankParser(user, city, position) {
         },
     });
     async function process() {
+        socket = clients[user._id.toString()];
         if (stopFlags.get(user._id.toString())) {
             socket.send(JSON.stringify(socketMessage('STOP', 'regular')));
             await browser.close();
@@ -66,7 +67,9 @@ export async function runCaJobankParser(user, city, position) {
             await closeModalButton.click();
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`closeModal: \n ${err}`, 'error')));
+    }
     try {
         await page.waitForSelector(inputPositionSelector);
         const inputPositionElement = await page.$(inputPositionSelector);
@@ -74,7 +77,9 @@ export async function runCaJobankParser(user, city, position) {
             await inputPositionElement.type(position);
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`inputPositionSelector: \n ${err}`, 'error')));
+    }
     try {
         await page.waitForSelector(inputCitySelector);
         const inputCityElement = await page.$(inputCitySelector);
@@ -82,7 +87,9 @@ export async function runCaJobankParser(user, city, position) {
             await inputCityElement.type(city);
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`inputCitySelector: \n ${err}`, 'error')));
+    }
     try {
         socket.send(JSON.stringify(socketMessage(`Seraching vacancies...`, 'regular')));
         await page.waitForSelector(searchButtonSelector);
@@ -91,7 +98,9 @@ export async function runCaJobankParser(user, city, position) {
             await searchButton.click();
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`searchButtonSelector: \n ${err}`, 'error')));
+    }
     try {
         await page.waitForSelector(numberOfVacanciesSelector);
         const numberOfVacancies = await page.$eval('span.found', (element) => element.textContent);
@@ -103,7 +112,9 @@ export async function runCaJobankParser(user, city, position) {
             return;
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`numberOfVacanciesSelector: \n ${err}`, 'error')));
+    }
     async function showAllVanacyLinks() {
         for (let i = 0; i >= 0; i++) {
             try {
@@ -114,6 +125,7 @@ export async function runCaJobankParser(user, city, position) {
                 }
             }
             catch (err) {
+                socket.send(JSON.stringify(socketMessage(`moreResultsBtnSelector: \n ${err}`, 'error')));
                 break;
             }
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -129,7 +141,9 @@ export async function runCaJobankParser(user, city, position) {
             VACANCY_LINKS = prefixedHrefs;
         }
     }
-    catch (err) { }
+    catch (err) {
+        socket.send(JSON.stringify(socketMessage(`jobListElementSelector: \n ${err}`, 'error')));
+    }
     await page.close();
     const existingLinks = await readCompaniesVacancyLink(user);
     VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);

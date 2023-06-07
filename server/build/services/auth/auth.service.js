@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../../configs/app.config.js';
 export async function registerUser(email, password) {
     try {
+        email = email.toLowerCase();
         const isUsed = await readUser(email);
         if (isUsed) {
             throw HttpError(409, 'Email already in use');
@@ -23,6 +24,7 @@ export async function registerUser(email, password) {
 }
 export async function loginUser(email, password) {
     try {
+        email = email.toLowerCase();
         const user = await readUser(email);
         if (!user) {
             throw HttpError(404, 'User does not exist');

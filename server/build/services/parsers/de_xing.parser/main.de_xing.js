@@ -25,19 +25,26 @@ const phoneNumberSelector = 'a[href^="tel:"]';
 export async function runXingParser(user, city, position) {
     const PARALLEL_PAGE = 3;
     let VACANCY_LINKS = [];
-    const socket = clients[user._id.toString()];
+    let socket = clients[user._id.toString()];
     stopFlags.set(user._id.toString(), false);
     socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
-    console.log('lounching');
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         defaultViewport: {
             width: 1200,
             height: 900,
         },
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+            '--disable-infobars',
+        ],
     });
-    console.log('lounched');
     async function process() {
+        socket = clients[user._id.toString()];
         if (stopFlags.get(user._id.toString())) {
             socket.send(JSON.stringify(socketMessage('STOP', 'warning')));
             await browser.close();
@@ -73,6 +80,7 @@ export async function runXingParser(user, city, position) {
         }
     }
     const existingLinks = await readCompaniesVacancyLink(user);
+    console.log('existingLinks', existingLinks.length);
     VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
     const existingEmails = await readCompaniesEmails(user);
     socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
@@ -201,7 +209,6 @@ async function parseVacancyPage(link, page, user, positionKeyword, placeKeyword,
                             socket.send(JSON.stringify(socketMessage(`Email already exists from ${link}.`, 'warning')));
                         }
                         else {
-                            socket.send(JSON.stringify(socketMessage(`Found new email!`, 'success')));
                             newCompany.email = validEmail;
                             newCompany.mailFrom = 'jobsite';
                         }
@@ -236,8 +243,11 @@ async function parseVacancyPage(link, page, user, positionKeyword, placeKeyword,
         catch (err) { }
         try {
             await createCompany(newCompany, user);
+            socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
         }
-        catch (err) { }
+        catch (err) {
+            console.log('createCompany \n', err);
+        }
     }
     catch (err) { }
 }

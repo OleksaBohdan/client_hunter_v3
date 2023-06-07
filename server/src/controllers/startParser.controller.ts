@@ -51,6 +51,7 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
         try {
           await runCaJobankParser(user, city, position);
         } catch (err) {
+          console.log(err);
           stopFlags.set(id, true);
         }
         break;
