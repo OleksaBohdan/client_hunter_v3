@@ -4,7 +4,7 @@ import { mapKeyword } from '../../pkg/mappers/keyword.mapper.js';
 
 export async function createKeyword(name: string, userId: string) {
   const user = await User.findById(userId);
-  const keyword = await Keyword.create({ keyword: name, user: user });
+  const keyword = await Keyword.create({ keyword: name.toLowerCase(), user: user });
   return mapKeyword(keyword);
 }
 
