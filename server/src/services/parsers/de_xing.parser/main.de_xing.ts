@@ -14,8 +14,8 @@ function vacanciesPage(position: string, city: string, page: number) {
   return `https://www.xing.com/jobs/search?country=de.02516e&keywords=${position}&location=${city}&page=${page}`;
 }
 const vacancyLinkSelector: any = 'a.list-item-job-teaser-list-item-listItem-f04c772e';
-const stopSelector: any = 'h2.sc-1gpssxl-0.bsVIlR.sc-100kd7l-1.eLOnrY[data-xds="Headline"]';
-const companyNameSelector: any = 'div[data-testid="header-company-info"] h2';
+const stopSelector: any = 'div.sc-100kd7l-1.jrZhBX > *';
+const companyNameSelector: any = 'p.body-copystyles__BodyCopy-x85e3j-0.eilRol';
 const companyIndustrySelector: any = 'li[data-testid="info-icon"] svg[data-xds="IconIndustries"]';
 const vacancyTitleSelector: any = 'div.titlestyles__TitleContainer-bl83l1-3 h1[data-testid="job-title"]';
 const publishedDateSelector: any = 'p[data-testid="published-date"]';
@@ -38,7 +38,7 @@ export async function runXingParser(user: IUser, city: string, position: string)
   socket.send(JSON.stringify(socketMessage('Lounching parser...', 'regular')));
 
   const browser = await puppeteer.launch({
-    headless: true,
+    // headless: false,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -90,17 +90,15 @@ export async function runXingParser(user: IUser, city: string, position: string)
         break;
       }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       break;
     }
   }
 
   // Filter links from DB and recently founded
   const existingLinks = await readCompaniesVacancyLink(user);
-  console.log('existingLinks', existingLinks.length);
   VACANCY_LINKS = removeExistingVacancyLinks(VACANCY_LINKS, existingLinks);
   const existingEmails = await readCompaniesEmails(user);
-  // socket.send(JSON.stringify(socketMessage(`Found new vacancies: ${VACANCY_LINKS.length}`, 'success')));
 
   // parsing vacancy pages
   const vacancyPages = [];
@@ -151,6 +149,7 @@ async function parseVacancyPage(
 
     // get company name
     try {
+      await page.waitForSelector(companyNameSelector, { timeout: 5000 });
       const companyNameElement = await page.$(companyNameSelector);
       if (companyNameElement) {
         const companyName = await page.evaluate((element) => element.textContent, companyNameElement);
@@ -158,7 +157,9 @@ async function parseVacancyPage(
           newCompany.name = companyName?.trim();
         }
       }
-    } catch (err) {}
+    } catch (err) {
+      socket.send(JSON.stringify(socketMessage(`Cannot find companyNameElement ${link}`, 'error')));
+    }
 
     // get company industry
     try {
@@ -296,7 +297,7 @@ async function parseVacancyPage(
       await createCompany(newCompany, user);
       socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
     } catch (err) {
-      console.log('createCompany \n', err);
+      // console.log('createCompany \n', err);
     }
   } catch (err) {}
 }
