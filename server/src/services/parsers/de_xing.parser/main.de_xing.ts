@@ -15,7 +15,7 @@ function vacanciesPage(position: string, city: string, page: number) {
 }
 const vacancyLinkSelector: any = 'a.list-item-job-teaser-list-item-listItem-f04c772e';
 const stopSelector: any = 'div.sc-100kd7l-1.jrZhBX > *';
-const companyNameSelector: any = 'p.body-copystyles__BodyCopy-x85e3j-0.eilRol';
+const companyNameSelector: any = 'p.body-copystyles__BodyCopy-x85e3j-0.gOBfoX';
 const companyIndustrySelector: any = 'li[data-testid="info-icon"] svg[data-xds="IconIndustries"]';
 const vacancyTitleSelector: any = 'div.titlestyles__TitleContainer-bl83l1-3 h1[data-testid="job-title"]';
 const publishedDateSelector: any = 'p[data-testid="published-date"]';

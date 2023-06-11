@@ -47,8 +47,8 @@ export async function readCompaniesByStatus(u: IUser, status: string) {
   return companies;
 }
 
-export async function updateCompanyStatus(status: Status, companyNames: string[]): Promise<void> {
-  const companiesToUpdate = await Company.find({ name: { $in: companyNames } });
+export async function updateCompanyStatus(u: IUser, status: Status, companyNames: string[]): Promise<void> {
+  const companiesToUpdate = await Company.find({ name: { $in: companyNames }, user: u });
   await Promise.all(
     companiesToUpdate.map(async (company) => {
       company.status = status;

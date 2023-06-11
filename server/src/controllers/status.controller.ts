@@ -18,7 +18,7 @@ export async function changeCompaniesStatus(req: Request, res: Response, next: N
       throw HttpError(404, 'User does not exist');
     }
 
-    await updateCompanyStatus(status, companies);
+    await updateCompanyStatus(user, status, companies);
 
     res.status(200).json({ message: 'ok' });
   } catch (err) {
