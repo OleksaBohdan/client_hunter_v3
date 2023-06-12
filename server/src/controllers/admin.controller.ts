@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpError from 'http-errors';
 import { transferCompanies } from '../services/admin/admin.service.js';
 
 export async function transferCompaniesDB(req: Request, res: Response, next: NextFunction) {
