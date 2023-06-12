@@ -9,15 +9,13 @@ const filePath = path.join(dirName, 'black-companies.csv');
 const userID = '';
 
 export async function transferCompanies() {
-  console.log('Tranfering db...');
-
   const csvData = await csvtojsonV1().fromFile(filePath);
 
   const mappedData = csvData.map((row) => {
     return {
       note: '',
-      positionKeyword: '',
-      placeKeyword: '',
+      positionKeyword: row['Keywords'],
+      placeKeyword: 'germany',
       mailFrom: '',
       email: row['Company email'] || uuidv4(),
       phone: row['Company phone'],
@@ -26,7 +24,7 @@ export async function transferCompanies() {
       vacancyLink: row['Vacancy link'],
       additionalInfo: '',
       industry: '',
-      vacancyTitle: row['Keywords'],
+      vacancyTitle: '',
       address: row['Company address'],
       size: row['Company size'] ? parseInt(row['Company size'], 10) : undefined,
       turnover: row['Turnover (number)'] ? parseInt(row['Turnover (number)'], 10) : undefined,
