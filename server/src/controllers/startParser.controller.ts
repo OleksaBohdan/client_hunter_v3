@@ -5,6 +5,7 @@ import { Parser } from '../databases/mongo/models/Parser.js';
 import { runCaJobankParser } from '../services/parsers/ca_jobbank.parser/main.ca_jobbank.js';
 import { runXingParser } from '../services/parsers/de_xing.parser/main.de_xing.js';
 import { runLinkedinParser } from '../services/parsers/linkedin.parser/main.linkedin.parser.js';
+import { runStartupverbandParser } from '../services/parsers/de_startupverband.parser/main.startupverband.parser.js';
 
 export const stopFlags = new Map();
 
@@ -68,6 +69,11 @@ export async function startParser(req: Request, res: Response, next: NextFunctio
         res.status(200).json({ message: 'Parser started succesfully' });
         await runLinkedinParser();
         console.log('running linkedin.com');
+        break;
+      case 'startupverband.de':
+        res.status(200).json({ message: 'Parser started succesfully' });
+        await runStartupverbandParser(user);
+        console.log('running startupverband.de');
         break;
     }
   } catch (err) {
