@@ -13,10 +13,11 @@ import { clients } from '../../../websocket/websocket.js';
 function vacanciesPage(position: string, city: string, page: number) {
   return `https://www.xing.com/jobs/search?country=de.02516e&keywords=${position}&location=${city}&page=${page}`;
 }
-const vacancyLinkSelector: any = 'a.list-item-job-teaser-list-item-listItem-f04c772e';
-const stopSelector: any = 'div.sc-100kd7l-1.jrZhBX > *';
-const companyNameSelector: any = 'p.body-copystyles__BodyCopy-x85e3j-0.gOBfoX';
-const companyIndustrySelector: any = 'li[data-testid="info-icon"] svg[data-xds="IconIndustries"]';
+const vacancyLinkSelector: any = 'a.sc-1lqq9u1-0.hUhrnN';
+const stopSelector: any = 'h2.sc-1gpssxl-0.gIZiug.sc-100kd7l-2.eNKBEp';
+const companyNameSelector: any = 'p.body-copystyles__BodyCopy-x85e3j-0.crPMQE';
+const companyIndustrySelector: any =
+  'p.body-copystyles__BodyCopy-x85e3j-0.jaFHYD.metastyles__Meta-y4z6ql-0.goBtoq.subheaderstyles__Industry-sc-1u9xecu-2.lpvnHp[data-xds="Meta"]';
 const vacancyTitleSelector: any = 'div.titlestyles__TitleContainer-bl83l1-3 h1[data-testid="job-title"]';
 const publishedDateSelector: any = 'p[data-testid="published-date"]';
 const companyLinkSelector: any = 'div[data-testid="header-company-info"] a[data-testid="company-logo-link"]';
@@ -75,6 +76,9 @@ export async function runXingParser(user: IUser, city: string, position: string)
   socket.send(JSON.stringify(socketMessage('Calculating vacancies...', 'regular')));
   for (let i = 1; true; i++) {
     try {
+      socket.send(
+        JSON.stringify(socketMessage(`Fetch vacancy likns go to ${vacanciesPage(position, city, i)}`, 'regular')),
+      );
       await page.goto(vacanciesPage(position, city, i));
       await page.waitForSelector(vacancyLinkSelector);
       const stopElement = await page.$(stopSelector);
@@ -90,7 +94,8 @@ export async function runXingParser(user: IUser, city: string, position: string)
         break;
       }
     } catch (err) {
-      // console.log(err);
+      socket.send(JSON.stringify(socketMessage(`Fetch vacancy likns: ${err}`, 'error')));
+      console.log(err);
       break;
     }
   }
@@ -158,22 +163,22 @@ async function parseVacancyPage(
         }
       }
     } catch (err) {
-      socket.send(JSON.stringify(socketMessage(`Cannot find companyNameElement ${link}`, 'error')));
+      socket.send(JSON.stringify(socketMessage(`Cannot find companyNameSelector ${link}`, 'error')));
     }
 
     // get company industry
     try {
       const companyIndustryElement = await page.$(companyIndustrySelector);
       if (companyIndustryElement) {
-        const industryTextElement = await companyIndustryElement.$x('..');
-        if (industryTextElement.length > 0) {
-          const industryText = await page.evaluate((element) => element.textContent, industryTextElement[0]);
-          if (industryText) {
-            newCompany.industry = industryText.trim();
-          }
+        const industryText = await page.evaluate((element) => element.textContent, companyIndustryElement);
+        if (industryText) {
+          newCompany.industry = industryText.trim();
         }
       }
-    } catch (err) {}
+    } catch (err) {
+      socket.send(JSON.stringify(socketMessage(`Cannot find companyIndustrySelector ${link}`, 'error')));
+      // console.error(err);
+    }
 
     //get vacancy title
     try {
