@@ -77,6 +77,11 @@ CompanySchema.pre<ICompany>('save', function (next) {
     if (emailIsUuid) {
       this.status = Status.GREY;
     }
+
+    // Trim the name field
+    if (this.name && typeof this.name === 'string') {
+      this.name = this.name.trim();
+    }
   }
   next();
 });

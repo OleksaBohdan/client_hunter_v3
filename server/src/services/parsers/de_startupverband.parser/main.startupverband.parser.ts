@@ -13,8 +13,17 @@ import { clients } from '../../../websocket/websocket.js';
 
 const websitePage = 'https://startupverband.de/verband/mitglieder/';
 
+export interface IStartupCompany {
+  email: string | null;
+  phone: string | null;
+  name: string | null;
+  website: string | null;
+  address: string | null;
+  memberType: string | null;
+}
+
 export async function runStartupverbandParser(user: IUser) {
-  let VACANCY_LINKS: string[] = [];
+  let STARTUP_COMPANIES: IStartupCompany[] = [];
 
   let socket = clients[user._id.toString()];
   stopFlags.set(user._id.toString(), false);
@@ -35,6 +44,7 @@ export async function runStartupverbandParser(user: IUser) {
       '--disable-gpu',
       '--disable-infobars',
     ],
+    ignoreHTTPSErrors: true,
   });
 
   async function process() {
@@ -63,6 +73,7 @@ export async function runStartupverbandParser(user: IUser) {
 
   let startPage = 1;
   const lastPageNumber = await page.$eval('a.paginate_button:last-child', (el) => el.textContent);
+  // const lastPageNumber = 1;
   if (lastPageNumber === null) {
     socket.send(JSON.stringify(socketMessage('No pagination element found!', 'error')));
     return;
@@ -72,6 +83,10 @@ export async function runStartupverbandParser(user: IUser) {
     if (startPage > +lastPageNumber) {
       break;
     }
+
+    socket.send(JSON.stringify(socketMessage(`Parse page ${startPage}`, 'regular')));
+
+    await page.waitForSelector('a.paginate_button');
 
     await page.$$eval(
       'a.paginate_button',
@@ -85,31 +100,64 @@ export async function runStartupverbandParser(user: IUser) {
       `${startPage}`,
     );
 
-    const links = await page.$$eval('tbody > tr > td > a', (anchors) =>
-      anchors.map((anchor) => {
-        let link = anchor.href;
-        if (!link.startsWith('http://') && !link.startsWith('https://')) {
-          link = 'http://' + link;
-        }
-        return link;
-      }),
+    let companies = await page.$$eval(
+      'tbody > tr',
+      (rows) =>
+        rows.map((row) => {
+          const tds = Array.from(row.getElementsByTagName('td'));
+          const nameElement = tds[0].querySelector('a') as HTMLAnchorElement;
+          const addressElement = tds[2].querySelector('a') as HTMLAnchorElement;
+          const memberTypeElement = tds[4].querySelector('a') as HTMLAnchorElement;
+
+          return {
+            name: nameElement ? nameElement.textContent : '',
+            website: nameElement ? nameElement.href : '',
+            address: addressElement ? addressElement.textContent : '',
+            memberType: memberTypeElement ? memberTypeElement.textContent : '',
+          };
+        }) as IStartupCompany[],
     );
 
+    companies = companies.map((company) => {
+      return {
+        ...company,
+        email: null,
+        phone: null,
+      };
+    });
+
+    STARTUP_COMPANIES = [...STARTUP_COMPANIES, ...companies];
+
     startPage++;
-
-    VACANCY_LINKS = [...VACANCY_LINKS, ...links];
-
-    await page.waitForTimeout(200);
   }
 
-  VACANCY_LINKS = [...new Set(VACANCY_LINKS)];
+  socket.send(JSON.stringify(socketMessage(`Found ${STARTUP_COMPANIES.length} companies.`, 'regular')));
 
-  console.log(VACANCY_LINKS);
+  // remove from STARTUP_COMPANIES Startup / Alumni memberType
+  socket.send(JSON.stringify(socketMessage(`Searching only 'Startup / Alumni' member type...`, 'regular')));
+  STARTUP_COMPANIES = STARTUP_COMPANIES.filter(
+    (company) => company.memberType && company.memberType === 'Startup / Alumni',
+  );
 
-  socket.send(JSON.stringify(socketMessage(`Found ${VACANCY_LINKS.length} vacancy links.`, 'regular')));
+  socket.send(
+    JSON.stringify(
+      socketMessage(`Found ${STARTUP_COMPANIES.length} companies with 'Startup / Alumni' member type.`, 'regular'),
+    ),
+  );
+
+  console.log(STARTUP_COMPANIES);
 
   // parsing website pages
-  //... some code
+  for (let i = 0; i <= STARTUP_COMPANIES.length; i++) {
+    socket.send(JSON.stringify(socketMessage(`${(i / STARTUP_COMPANIES.length) * 100}`, 'progress')));
+    try {
+      await scrapeEmailFromWebsite(STARTUP_COMPANIES[i], page, socket, user);
+    } catch (err) {
+      if (err instanceof Error) {
+        // socket.send(JSON.stringify(socketMessage(`Error in scrapeEmailFromWebsite: ${err.message} `, 'error')));
+      }
+    }
+  }
 
   // finish
   socket.send(JSON.stringify(socketMessage(`${100}`, 'progress')));
@@ -120,35 +168,100 @@ export async function runStartupverbandParser(user: IUser) {
   );
   socket.send(JSON.stringify(socketMessage(`Parser has finished work`, 'success')));
   stopFlags.delete(user._id.toString());
-  // await browser.close();
+  await browser.close();
 }
 
-async function scrapeEmailFromWebsite(startingUrl: string, page: puppeteer.Page) {
-  await page.goto(startingUrl);
+async function scrapeEmailFromWebsite(
+  startupCompany: IStartupCompany,
+  page: puppeteer.Page,
+  socket: WebSocket,
+  user: IUser,
+) {
+  if (startupCompany.website == null) {
+    socket.send(JSON.stringify(socketMessage(`Company '${startupCompany.name}' has no website`, 'warning')));
+    try {
+      const newCompany: ICompany = new Company();
+      newCompany.name = startupCompany.name ?? '';
+      newCompany.address = startupCompany.address ?? '';
+      newCompany.website = '';
+      newCompany.email = '';
+      await createCompany(newCompany, user);
+      socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
+    } catch (err) {
+      // console.log('createCompany \n', err);
+    }
+    return;
+  }
+
+  const newCompany: ICompany = new Company();
+  newCompany.name = startupCompany.name ? startupCompany.name : '';
+  newCompany.address = startupCompany.address ? startupCompany.address : '';
+  newCompany.website = startupCompany.website ? startupCompany.website : '';
+
+  socket.send(
+    JSON.stringify(socketMessage(`Go to company ${startupCompany.name} website ${startupCompany.website}`, 'regular')),
+  );
+
+  await page.goto(startupCompany.website);
 
   let pageContent = await page.content();
+  const emailRegex =
+    /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(?!jpg|png|jpeg|gif|bmp|tiff|webp|mp3|wav|mp4|avi|doc|docx|pdf)[A-Z|a-z]{2,}\b/g;
 
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b/g;
-
+  socket.send(JSON.stringify(socketMessage(`Looking for company ${startupCompany.name} email...`, 'regular')));
   let emails = pageContent.match(emailRegex);
 
   // If email is not found on the main page, start checking other pages.
   if (!emails) {
+    socket.send(
+      JSON.stringify(socketMessage(`On main page company ${startupCompany.name} email not found`, 'regular')),
+    );
+
     let links = await page.$$eval('a', (links) => links.map((link) => link.href));
 
-    const domain = url.parse(startingUrl).hostname;
+    const domain = url.parse(startupCompany.website).hostname;
 
     links = links.filter((link) => url.parse(link).hostname === domain);
 
+    let counter = 0;
     for (const link of links) {
+      if (counter >= 30) break;
+      socket.send(
+        JSON.stringify(socketMessage(`Go to company ${startupCompany.name} website page ${link}`, 'regular')),
+      );
       await page.goto(link);
 
       pageContent = await page.content();
       emails = pageContent.match(emailRegex);
 
       if (emails) break;
+      counter++;
     }
   }
 
-  return emails;
+  if (!emails) {
+    socket.send(
+      JSON.stringify(
+        socketMessage(
+          `Email not found for company '${startupCompany.name}' on website ${startupCompany.website}`,
+          'regular',
+        ),
+      ),
+    );
+  }
+
+  if (emails) {
+    socket.send(JSON.stringify(socketMessage(`Email found for company '${startupCompany.name}'`, 'regular')));
+  }
+
+  try {
+    newCompany.email = emails ? emails[0] : '';
+    await createCompany(newCompany, user);
+    socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
+  } catch (err) {
+    if (err instanceof Error) {
+      socket.send(JSON.stringify(socketMessage(`Error in createCompany: ${err.message} `, 'error')));
+    }
+  }
+  return;
 }
