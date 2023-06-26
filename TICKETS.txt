@@ -1,0 +1,6 @@
+#6 Feat-24.06.23: Transfer to new GCP server 
+#5 Feat-24.06.23: add new parser with https://startupverband.de +
+#4 Fix-24.06.23: can't parse xing +
+#3 Fix: can add company without name to Xing parser
+#2 Fix: change company status – seperate accounts behavior +
+#1 Fix: Cannot find companyNameElement + 

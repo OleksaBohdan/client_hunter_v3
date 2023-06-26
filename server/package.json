@@ -1,6 +1,6 @@
 {
   "name": "client_hunter_v3",
-  "version": "1.0.0",
+  "version": "3.2.0",
   "description": "parse jobs",
   "main": "index.js",
   "type": "module",
