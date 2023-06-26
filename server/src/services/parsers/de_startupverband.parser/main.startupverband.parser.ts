@@ -1,11 +1,9 @@
 import puppeteer from 'puppeteer';
 import url from 'url';
-import { isEmail } from '../pkg/validators.js';
-import { removeExistingVacancyLinks } from '../pkg/filters.js';
 import { ICompany, Company } from '../../../databases/mongo/models/Company.js';
+import { readAllCompanies } from '../../repositories/company.service.js';
 import { IUser } from '../../../databases/mongo/models/User.js';
-import { createCompany, readCompaniesEmails } from '../../repositories/company.service.js';
-import { readCompaniesVacancyLink } from '../../repositories/company.service.js';
+import { createCompany } from '../../repositories/company.service.js';
 import { stopFlags } from '../../../controllers/startParser.controller.js';
 import WebSocket from 'ws';
 import { socketMessage } from '../../../websocket/websocket.js';
@@ -68,12 +66,10 @@ export async function runStartupverbandParser(user: IUser) {
   // fetch vacancy links
   socket.send(JSON.stringify(socketMessage('Calculating vacancies...', 'regular')));
 
-  //... some code
   await page.goto(websitePage, { waitUntil: 'networkidle0' });
 
   let startPage = 1;
   const lastPageNumber = await page.$eval('a.paginate_button:last-child', (el) => el.textContent);
-  // const lastPageNumber = 1;
   if (lastPageNumber === null) {
     socket.send(JSON.stringify(socketMessage('No pagination element found!', 'error')));
     return;
@@ -145,7 +141,26 @@ export async function runStartupverbandParser(user: IUser) {
     ),
   );
 
-  console.log(STARTUP_COMPANIES);
+  // remove existing companies from STARTUP_COMPANIES list
+  try {
+    const existingCompanies = await readAllCompanies(user);
+
+    STARTUP_COMPANIES = STARTUP_COMPANIES.filter((startupCompany) => {
+      return !existingCompanies.find((existingCompany) => existingCompany.name === startupCompany.name);
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      socket.send(JSON.stringify(socketMessage(`Error in readCompanies: ${err.message} `, 'error')));
+    }
+  }
+  socket.send(
+    JSON.stringify(
+      socketMessage(
+        `Found ${STARTUP_COMPANIES.length} companies with 'Startup / Alumni' member type that not exists in the database`,
+        'regular',
+      ),
+    ),
+  );
 
   // parsing website pages
   for (let i = 0; i <= STARTUP_COMPANIES.length; i++) {
@@ -207,16 +222,14 @@ async function scrapeEmailFromWebsite(
   let pageContent = await page.content();
   const emailRegex =
     /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(?!jpg|png|jpeg|gif|bmp|tiff|webp|mp3|wav|mp4|avi|doc|docx|pdf)[A-Z|a-z]{2,}\b/g;
+  const phoneRegex = /\+49\s?(\([0-9]+\))?(\s?[0-9]{1,})+\b/g;
+  const phones = pageContent.match(phoneRegex);
 
   socket.send(JSON.stringify(socketMessage(`Looking for company ${startupCompany.name} email...`, 'regular')));
   let emails = pageContent.match(emailRegex);
 
   // If email is not found on the main page, start checking other pages.
   if (!emails) {
-    socket.send(
-      JSON.stringify(socketMessage(`On main page company ${startupCompany.name} email not found`, 'regular')),
-    );
-
     let links = await page.$$eval('a', (links) => links.map((link) => link.href));
 
     const domain = url.parse(startupCompany.website).hostname;
@@ -252,10 +265,14 @@ async function scrapeEmailFromWebsite(
 
   if (emails) {
     socket.send(JSON.stringify(socketMessage(`Email found for company '${startupCompany.name}'`, 'regular')));
+    newCompany.email = emails ? emails[0] : '';
+  }
+
+  if (phones) {
+    newCompany.phone = phones.join(';');
   }
 
   try {
-    newCompany.email = emails ? emails[0] : '';
     await createCompany(newCompany, user);
     socket.send(JSON.stringify(socketMessage(`Found new company!`, 'success')));
   } catch (err) {
